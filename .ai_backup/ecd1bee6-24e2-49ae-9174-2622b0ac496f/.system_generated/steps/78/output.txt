@@ -1,0 +1,10 @@
+
+The command exited with code 0.
+Output:
+warning: in the working copy of 'Assets/Editor/ProjectBuilder.cs', LF will be replaced by CRLF the next time Git touches it
+[main f76bbfe] Add ProjectBuilder editor script
+ 1 file changed, 74 insertions(+)
+ create mode 100644 Assets/Editor/ProjectBuilder.cs
+To https://github.com/JoChangjae/Mini-Kingdom.git
+   9a4910f..f76bbfe  main -> main
+

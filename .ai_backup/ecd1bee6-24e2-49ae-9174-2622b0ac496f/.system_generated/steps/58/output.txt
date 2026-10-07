@@ -1,0 +1,48 @@
+
+The command exited with code 1.
+Output:
+
+
+    디렉터리: C:\Users\JCHJ\Desktop\Antigravity\mini-kingdom
+
+
+Mode                 LastWriteTime         Length Name                                                                 
+----                 -------------         ------ ----                                                                 
+d-----        2026-10-07     14:41                Packages                                                             
+
+
+    디렉터리: C:\Users\JCHJ\Desktop\Antigravity\mini-kingdom\Assets
+
+
+Mode                 LastWriteTime         Length Name                                                                 
+----                 -------------         ------ ----                                                                 
+d-----        2026-10-07     14:41                Scenes                                                               
+d-----        2026-10-07     14:41                Prefabs                                                              
+d-----        2026-10-07     14:41                Sprites                                                              
+git : The term 'git' is not recognized as the name of a cmdlet, function, script file, or operable program. Check the s
+pelling of the name, or if a path was included, verify that the path is correct and try again.
+At line:9 char:1
++ git init
++ ~~~
+    + CategoryInfo          : ObjectNotFound: (git:String) [], CommandNotFoundException
+    + FullyQualifiedErrorId : CommandNotFoundException
+ 
+git : The term 'git' is not recognized as the name of a cmdlet, function, script file, or operable program. Check the s
+pelling of the name, or if a path was included, verify that the path is correct and try again.
+At line:10 char:1
++ git --version
++ ~~~
+    + CategoryInfo          : ObjectNotFound: (git:String) [], CommandNotFoundException
+    + FullyQualifiedErrorId : CommandNotFoundException
+ 
+gh : The term 'gh' is not recognized as the name of a cmdlet, function, script file, or operable program. Check the spe
+lling of the name, or if a path was included, verify that the path is correct and try again.
+At line:11 char:1
++ gh auth status 2>&1 # GitHub CLI 로그인 상태 확인
++ ~~
+    + CategoryInfo          : ObjectNotFound: (gh:String) [], CommandNotFoundException
+    + FullyQualifiedErrorId : CommandNotFoundException
+ 
+
+
+

@@ -1,0 +1,15 @@
+
+The command exited with code 0.
+Output:
+On branch main
+nothing to commit, working tree clean
+---
+commit 9a4910f23a1215a947957a4536c6eac0e5060e88
+Author: JoChangjae <skdms5623@naver.com>
+Date:   Wed Oct 7 14:49:41 2026 +0900
+
+    Initial commit: 게임 기획 문서 및 코어 프레임워크 1차 구현
+---
+origin	https://github.com/JoChangjae/Mini-Kingdom.git (fetch)
+origin	https://github.com/JoChangjae/Mini-Kingdom.git (push)
+

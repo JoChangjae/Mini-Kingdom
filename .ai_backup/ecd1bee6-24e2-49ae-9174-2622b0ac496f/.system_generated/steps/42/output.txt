@@ -1,0 +1,21 @@
+
+The command exited with code 0.
+Output:
+=== Mini Kingdom Project Summary ===
+Scripts: 58 files (128.5 KB)
+Docs: 5 files (69.6 KB)
+Total: 64 files
+
+=== By Category ===
+Combat: 3 files
+Components: 3 files
+Core: 11 files
+Data: 13 files
+Dungeon: 3 files
+Enemy: 3 files
+Items: 2 files
+Kingdom: 4 files
+Player: 3 files
+Screens: 9 files
+Utils: 4 files
+

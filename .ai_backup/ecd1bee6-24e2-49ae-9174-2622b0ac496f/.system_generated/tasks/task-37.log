@@ -1,0 +1,8 @@
+Successfully scheduled one-shot timer.
+Expected to fire at: 2026-10-07T14:32:07+09:00
+Prompt: Check if Document Improver subagent has completed updating Mini Kingdom docs.
+Early Termination: 180f3402-6709-430c-8acf-fe55268a5f86
+
+[2026-10-07T14:27:37+09:00] Still waiting. Remaining time: 4m30s
+[2026-10-07T14:28:07+09:00] Still waiting. Remaining time: 4m0s
+[2026-10-07T14:28:14+09:00] Timer cancelled: early-termination condition (180f3402-6709-430c-8acf-fe55268a5f86) met by a message from 180f3402-6709-430c-8acf-fe55268a5f86.

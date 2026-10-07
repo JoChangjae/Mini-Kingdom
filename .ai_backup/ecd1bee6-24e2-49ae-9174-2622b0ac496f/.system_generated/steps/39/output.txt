@@ -1,0 +1,67 @@
+
+The command exited with code 0.
+Output:
+
+Path                                                                                             Size       
+----                                                                                             ----       
+C:\Users\JCHJ\Desktop\Antigravity\mini-kingdom\Assets\Scripts\Combat\CombatSystem.cs             3,535 bytes
+C:\Users\JCHJ\Desktop\Antigravity\mini-kingdom\Assets\Scripts\Combat\LevelUpSystem.cs            3,359 bytes
+C:\Users\JCHJ\Desktop\Antigravity\mini-kingdom\Assets\Scripts\Combat\SkillSystem.cs              1,862 bytes
+C:\Users\JCHJ\Desktop\Antigravity\mini-kingdom\Assets\Scripts\Core\DailyBonusSystem.cs           3,040 bytes
+C:\Users\JCHJ\Desktop\Antigravity\mini-kingdom\Assets\Scripts\Core\EventBus.cs                   2,109 bytes
+C:\Users\JCHJ\Desktop\Antigravity\mini-kingdom\Assets\Scripts\Core\GameConfig.cs                 1,138 bytes
+C:\Users\JCHJ\Desktop\Antigravity\mini-kingdom\Assets\Scripts\Core\GameEvents.cs                 2,265 bytes
+C:\Users\JCHJ\Desktop\Antigravity\mini-kingdom\Assets\Scripts\Core\GameManager.cs                2,111 bytes
+C:\Users\JCHJ\Desktop\Antigravity\mini-kingdom\Assets\Scripts\Core\RoyalDecreeSystem.cs          3,284 bytes
+C:\Users\JCHJ\Desktop\Antigravity\mini-kingdom\Assets\Scripts\Core\SaveManager.cs                3,509 bytes
+C:\Users\JCHJ\Desktop\Antigravity\mini-kingdom\Assets\Scripts\Data\BuildingData.cs               1,490 bytes
+C:\Users\JCHJ\Desktop\Antigravity\mini-kingdom\Assets\Scripts\Data\DiscoveryBookEntry.cs         879 bytes  
+C:\Users\JCHJ\Desktop\Antigravity\mini-kingdom\Assets\Scripts\Data\DungeonData.cs                1,546 bytes
+C:\Users\JCHJ\Desktop\Antigravity\mini-kingdom\Assets\Scripts\Data\EnemyData.cs                  1,664 bytes
+C:\Users\JCHJ\Desktop\Antigravity\mini-kingdom\Assets\Scripts\Data\EquipmentData.cs              1,324 bytes
+C:\Users\JCHJ\Desktop\Antigravity\mini-kingdom\Assets\Scripts\Data\EquipmentSetData.cs           647 bytes  
+C:\Users\JCHJ\Desktop\Antigravity\mini-kingdom\Assets\Scripts\Data\LootTable.cs                  1,198 bytes
+C:\Users\JCHJ\Desktop\Antigravity\mini-kingdom\Assets\Scripts\Data\ResourceType.cs               972 bytes  
+C:\Users\JCHJ\Desktop\Antigravity\mini-kingdom\Assets\Scripts\Data\RoyalDecreeData.cs            759 bytes  
+C:\Users\JCHJ\Desktop\Antigravity\mini-kingdom\Assets\Scripts\Data\SkillData.cs                  1,375 bytes
+C:\Users\JCHJ\Desktop\Antigravity\mini-kingdom\Assets\Scripts\Data\StatModifier.cs               784 bytes  
+C:\Users\JCHJ\Desktop\Antigravity\mini-kingdom\Assets\Scripts\Data\SynergyData.cs                738 bytes  
+C:\Users\JCHJ\Desktop\Antigravity\mini-kingdom\Assets\Scripts\Data\UpgradeData.cs                1,096 bytes
+C:\Users\JCHJ\Desktop\Antigravity\mini-kingdom\Assets\Scripts\Dungeon\DungeonGenerator.cs        2,259 bytes
+C:\Users\JCHJ\Desktop\Antigravity\mini-kingdom\Assets\Scripts\Dungeon\DungeonRunManager.cs       2,500 bytes
+C:\Users\JCHJ\Desktop\Antigravity\mini-kingdom\Assets\Scripts\Dungeon\RoomManager.cs             2,222 bytes
+C:\Users\JCHJ\Desktop\Antigravity\mini-kingdom\Assets\Scripts\Enemy\BossController.cs            1,969 bytes
+C:\Users\JCHJ\Desktop\Antigravity\mini-kingdom\Assets\Scripts\Enemy\EnemyController.cs           4,237 bytes
+C:\Users\JCHJ\Desktop\Antigravity\mini-kingdom\Assets\Scripts\Enemy\EnemySpawner.cs              2,371 bytes
+C:\Users\JCHJ\Desktop\Antigravity\mini-kingdom\Assets\Scripts\Items\EquipmentManager.cs          1,641 bytes
+C:\Users\JCHJ\Desktop\Antigravity\mini-kingdom\Assets\Scripts\Items\LootManager.cs               887 bytes  
+C:\Users\JCHJ\Desktop\Antigravity\mini-kingdom\Assets\Scripts\Kingdom\BuildingManager.cs         2,592 bytes
+C:\Users\JCHJ\Desktop\Antigravity\mini-kingdom\Assets\Scripts\Kingdom\DiscoveryBookManager.cs    1,231 bytes
+C:\Users\JCHJ\Desktop\Antigravity\mini-kingdom\Assets\Scripts\Kingdom\KingdomDefenseSystem.cs    1,394 bytes
+C:\Users\JCHJ\Desktop\Antigravity\mini-kingdom\Assets\Scripts\Kingdom\ResourceManager.cs         1,541 bytes
+C:\Users\JCHJ\Desktop\Antigravity\mini-kingdom\Assets\Scripts\Player\PlayerController.cs         7,483 bytes
+C:\Users\JCHJ\Desktop\Antigravity\mini-kingdom\Assets\Scripts\Player\PlayerInventory.cs          3,433 bytes
+C:\Users\JCHJ\Desktop\Antigravity\mini-kingdom\Assets\Scripts\Player\PlayerStats.cs              4,315 bytes
+C:\Users\JCHJ\Desktop\Antigravity\mini-kingdom\Assets\Scripts\UI\Components\FloatingText.cs      1,360 bytes
+C:\Users\JCHJ\Desktop\Antigravity\mini-kingdom\Assets\Scripts\UI\Components\ResourceBar.cs       790 bytes  
+C:\Users\JCHJ\Desktop\Antigravity\mini-kingdom\Assets\Scripts\UI\Components\SkillButton.cs       1,215 bytes
+C:\Users\JCHJ\Desktop\Antigravity\mini-kingdom\Assets\Scripts\UI\Core\PopupManager.cs            5,310 bytes
+C:\Users\JCHJ\Desktop\Antigravity\mini-kingdom\Assets\Scripts\UI\Core\ScreenBase.cs              3,162 bytes
+C:\Users\JCHJ\Desktop\Antigravity\mini-kingdom\Assets\Scripts\UI\Core\UIAnimations.cs            3,253 bytes
+C:\Users\JCHJ\Desktop\Antigravity\mini-kingdom\Assets\Scripts\UI\Core\UIManager.cs               3,827 bytes
+C:\Users\JCHJ\Desktop\Antigravity\mini-kingdom\Assets\Scripts\UI\Screens\BuildingDetailScreen.cs 2,530 bytes
+C:\Users\JCHJ\Desktop\Antigravity\mini-kingdom\Assets\Scripts\UI\Screens\DiscoveryBookScreen.cs  2,686 bytes
+C:\Users\JCHJ\Desktop\Antigravity\mini-kingdom\Assets\Scripts\UI\Screens\DungeonHUDScreen.cs     2,840 bytes
+C:\Users\JCHJ\Desktop\Antigravity\mini-kingdom\Assets\Scripts\UI\Screens\DungeonSelectScreen.cs  1,866 bytes
+C:\Users\JCHJ\Desktop\Antigravity\mini-kingdom\Assets\Scripts\UI\Screens\KingdomScreen.cs        3,173 bytes
+C:\Users\JCHJ\Desktop\Antigravity\mini-kingdom\Assets\Scripts\UI\Screens\LevelUpScreen.cs        2,317 bytes
+C:\Users\JCHJ\Desktop\Antigravity\mini-kingdom\Assets\Scripts\UI\Screens\RoyalDecreeScreen.cs    1,887 bytes
+C:\Users\JCHJ\Desktop\Antigravity\mini-kingdom\Assets\Scripts\UI\Screens\RunResultScreen.cs      2,776 bytes
+C:\Users\JCHJ\Desktop\Antigravity\mini-kingdom\Assets\Scripts\UI\Screens\SettingsScreen.cs       2,059 bytes
+C:\Users\JCHJ\Desktop\Antigravity\mini-kingdom\Assets\Scripts\Utils\Extensions.cs                3,156 bytes
+C:\Users\JCHJ\Desktop\Antigravity\mini-kingdom\Assets\Scripts\Utils\ObjectPool.cs                1,909 bytes
+C:\Users\JCHJ\Desktop\Antigravity\mini-kingdom\Assets\Scripts\Utils\Singleton.cs                 2,184 bytes
+C:\Users\JCHJ\Desktop\Antigravity\mini-kingdom\Assets\Scripts\Utils\WeightedRandomPicker.cs      2,555 bytes
+
+
+

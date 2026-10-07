@@ -1,0 +1,16 @@
+
+The command exited with code 0.
+Output:
+
+FullName                                                                       Length
+--------                                                                       ------
+C:\Users\JCHJ\Desktop\Antigravity\mini-kingdom\docs                                  
+C:\Users\JCHJ\Desktop\Antigravity\mini-kingdom\README.md                       2248  
+C:\Users\JCHJ\Desktop\Antigravity\mini-kingdom\docs\01-game-design-document.md 15309 
+C:\Users\JCHJ\Desktop\Antigravity\mini-kingdom\docs\02-tech-stack.md           16041 
+C:\Users\JCHJ\Desktop\Antigravity\mini-kingdom\docs\03-game-systems.md         11154 
+C:\Users\JCHJ\Desktop\Antigravity\mini-kingdom\docs\04-ui-ux-guide.md          13998 
+C:\Users\JCHJ\Desktop\Antigravity\mini-kingdom\docs\05-monetization.md         11432 
+
+
+
