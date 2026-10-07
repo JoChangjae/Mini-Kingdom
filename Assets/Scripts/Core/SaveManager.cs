@@ -13,6 +13,8 @@ namespace MiniKingdom.Core
         public string ProgressData = "{}";
         public string SettingsData = "{}";
         public string DiscoveryBookData = "{}";
+        public long lastLogoutTime;
+        public System.Collections.Generic.List<string> AcquiredRelicIds = new System.Collections.Generic.List<string>();
     }
 
     /// <summary>

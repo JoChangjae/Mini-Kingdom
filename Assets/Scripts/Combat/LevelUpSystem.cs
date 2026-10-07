@@ -2,109 +2,122 @@ using System.Collections.Generic;
 using System.Linq;
 using UnityEngine;
 using MiniKingdom.Core;
-using MiniKingdom.Data;
-using MiniKingdom.Utils;
 
 namespace MiniKingdom.Combat
 {
     /// <summary>
-    /// In-run level up and upgrade choice system.
+    /// Event published when a skill fusion upgrade is selected.
+    /// </summary>
+    public struct SkillFusionEvent
+    {
+        public string ResultingSkillId;
+    }
+
+    /// <summary>
+    /// 게임 내 레벨업 및 3선택지 업그레이드 시스템을 관리합니다. (Manages in-run level up and 3-choice upgrades)
     /// </summary>
     public class LevelUpSystem : MonoBehaviour
     {
-        [SerializeField] private int maxLevel = 15;
-        [SerializeField] private List<UpgradeData> allUpgradesPool;
+        [SerializeField] private List<SkillData> _availableSkills;
+        [SerializeField] private List<FusionRecipe> _fusionRecipes;
         
-        private int _currentLevel = 1;
-        private float _currentXP = 0;
-        private float _xpToNextLevel = 100f;
+        // 현재 플레이어가 보유한 스킬 리스트
+        private List<SkillData> _playerSkills = new List<SkillData>();
 
-        private Dictionary<string, int> _synergyCounts = new Dictionary<string, int>();
-        private List<UpgradeData> _activeUpgrades = new List<UpgradeData>();
-
-        public void AddXP(float amount)
+        /// <summary>
+        /// 레벨업 시 제공할 3개의 선택지를 생성합니다. (Generates 3 choices on level up)
+        /// </summary>
+        public List<SkillData> GenerateUpgradeChoices()
         {
-            if (_currentLevel >= maxLevel) return;
-
-            _currentXP += amount;
-            if (_currentXP >= _xpToNextLevel)
+            List<SkillData> choices = new List<SkillData>();
+            
+            // 1. 융합(Fusion) 가능 여부 체크
+            SkillData fusionSkill = CheckForSkillFusions();
+            if (fusionSkill != null)
             {
-                _currentXP -= _xpToNextLevel;
-                LevelUp();
+                // 융합 스킬은 최우선순위로 풀에 추가됨
+                choices.Add(fusionSkill);
             }
-        }
 
-        private void LevelUp()
-        {
-            _currentLevel++;
-            _xpToNextLevel *= 1.2f; // XP requirement scales up
+            // 2. 일반 스킬들 중에서 무작위 선택하여 3개 채우기
+            var pool = _availableSkills.Where(s => !choices.Contains(s) && CanAcquire(s)).ToList();
+            
+            // 셔플 후 추가 (단순 구현)
+            Shuffle(pool);
 
-            // Pause game
-            Time.timeScale = 0f;
-
-            // Generate choices
-            int choiceCount = HasLibraryBuff() ? 4 : 3;
-            var choices = GenerateChoices(choiceCount);
-
-            // TODO: UI에 choices를 전달하고 유저 선택 대기
-            // EventBus.Publish(new LevelUpEvent(choices));
-        }
-
-        private List<UpgradeData> GenerateChoices(int count)
-        {
-            var available = allUpgradesPool.Where(u => 
-                u.RequiredLevel <= _currentLevel && 
-                (u.IsStackable || !_activeUpgrades.Contains(u))
-            ).ToList();
-
-            var choices = new List<UpgradeData>();
-            var picker = new WeightedRandomPicker<UpgradeData>();
-            foreach (var u in available) picker.Add(u, u.Weight);
-
-            for (int i = 0; i < count; i++)
+            int remainingSlots = 3 - choices.Count;
+            for (int i = 0; i < remainingSlots && i < pool.Count; i++)
             {
-                if (available.Count == 0) break;
-                var picked = picker.PickRandom();
-                choices.Add(picked);
-                picker.Remove(picked); // 중복 선택 방지
+                choices.Add(pool[i]);
             }
 
             return choices;
         }
 
-        public void SelectUpgrade(UpgradeData upgrade)
+        /// <summary>
+        /// 플레이어가 선택한 업그레이드를 적용합니다. (Applies selected upgrade)
+        /// </summary>
+        public void ApplyUpgrade(SkillData selectedSkill)
         {
-            _activeUpgrades.Add(upgrade);
-
-            // Apply stats
-            var pStats = FindObjectOfType<Player.PlayerStats>();
-            if (pStats != null)
+            if (selectedSkill.IsFusion)
             {
-                foreach (var mod in upgrade.Modifiers) pStats.AddModifier(mod);
+                EventBus.Publish(new SkillFusionEvent { ResultingSkillId = selectedSkill.Id });
             }
 
-            // 시너지 카운트
-            if (!string.IsNullOrEmpty(upgrade.SynergyTag))
+            // 플레이어 스킬 목록에 추가하거나 레벨 증가
+            var existing = _playerSkills.FirstOrDefault(s => s.Id == selectedSkill.Id);
+            if (existing != null)
             {
-                if (!_synergyCounts.ContainsKey(upgrade.SynergyTag)) _synergyCounts[upgrade.SynergyTag] = 0;
-                _synergyCounts[upgrade.SynergyTag]++;
-                
-                CheckSynergies(upgrade.SynergyTag);
+                existing.CurrentLevel++;
             }
-
-            Time.timeScale = 1f; // Resume
+            else
+            {
+                _playerSkills.Add(selectedSkill);
+            }
         }
 
-        private void CheckSynergies(string tag)
+        /// <summary>
+        /// 조건이 맞는 스킬 융합이 있는지 확인합니다. (Checks if there are available skill fusions)
+        /// </summary>
+        private SkillData CheckForSkillFusions()
         {
-            // 특정 태그 카운트가 임계치에 도달하면 시너지 효과 발동
-            // SynergyData 필요
+            foreach (var recipe in _fusionRecipes)
+            {
+                if (IsSkillMaxLevel(recipe.RequiredSkill1Id) && IsSkillMaxLevel(recipe.RequiredSkill2Id))
+                {
+                    // 융합 결과를 반환
+                    return recipe.ResultingSkill;
+                }
+            }
+            return null;
         }
 
-        private bool HasLibraryBuff()
+        private bool IsSkillMaxLevel(string skillId)
         {
-            // 왕립도서관 효과 체크
-            return false;
+            var skill = _playerSkills.FirstOrDefault(s => s.Id == skillId);
+            return skill != null && skill.CurrentLevel >= skill.MaxLevel;
+        }
+
+        private bool CanAcquire(SkillData skill)
+        {
+            // 최대 레벨에 도달하지 않은 스킬만 획득 가능
+            var currentSkill = _playerSkills.FirstOrDefault(s => s.Id == skill.Id);
+            if (currentSkill != null && currentSkill.CurrentLevel >= currentSkill.MaxLevel)
+                return false;
+            return true;
+        }
+
+        private void Shuffle<T>(IList<T> list)
+        {
+            int n = list.Count;
+            while (n > 1)
+            {
+                n--;
+                int k = UnityEngine.Random.Range(0, n + 1);
+                T value = list[k];
+                list[k] = list[n];
+                list[n] = value;
+            }
         }
     }
 }

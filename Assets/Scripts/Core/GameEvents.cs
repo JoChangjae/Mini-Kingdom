@@ -109,4 +109,30 @@ namespace MiniKingdom.Core
         public bool Success;
         public int Score;
     }
+    public struct WeatherChangedEvent
+    {
+        public MiniKingdom.Data.WeatherType WeatherType;
+    }
+
+    public struct TaxCollectedEvent
+    {
+        public int GoldAmount;
+        public int ResourceAmount;
+    }
+
+    public struct RelicAcquiredEvent
+    {
+        public MiniKingdom.Data.RelicData RelicData;
+    }
+
+    public struct FishCaughtEvent
+    {
+        public string FishType;
+        public bool IsSuccess;
+    }
+
+    public struct SkillFusionEvent
+    {
+        public MiniKingdom.Data.SkillFusionData FusionData;
+    }
 }
