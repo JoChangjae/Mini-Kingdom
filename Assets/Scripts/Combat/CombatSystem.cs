@@ -1,21 +1,28 @@
 using UnityEngine;
 using MiniKingdom.Core;
 using MiniKingdom.Data;
+using MiniKingdom.UI;
+using MiniKingdom.Utils;
 
 namespace MiniKingdom.Combat
 {
-    public enum DamageType { Physical, Magic, Nature }
-
     /// <summary>
     /// Singleton managing combat formulas, combos, and damage text.
     /// </summary>
     public class CombatSystem : Singleton<CombatSystem>
     {
+        [Header("Damage Text")]
+        [SerializeField] private FloatingText floatingTextPrefab;
+        [SerializeField] private Canvas worldSpaceCanvas;
+
         private int _comboCount;
         private float _lastHitTime;
         private float _comboTimeout = 3f;
         
         private int _killsThisRun;
+
+        public int ComboCount => _comboCount;
+        public int KillsThisRun => _killsThisRun;
 
         private void Update()
         {
@@ -27,43 +34,65 @@ namespace MiniKingdom.Combat
 
         public void ProcessAttack(GameObject attacker, GameObject defender, float baseDamage, DamageType type, float skillMultiplier = 1f)
         {
-            // 방어력 가져오기 (가상의 컴포넌트)
-            float def = 5f; 
-            var enemyStats = defender.GetComponent<Enemy.EnemyController>();
-            if (enemyStats != null) def = enemyStats.DEF;
+            if (defender == null) return;
 
-            // 속성 상성
-            float typeMod = GetTypeModifier(type, DamageType.Physical); // 적의 속성을 안다면 대체
+            // 방어력 및 적 속성 확인
+            float def = 5f; 
+            var enemyCtrl = defender.GetComponent<Enemy.EnemyController>();
+            float typeMod = 1.0f;
+
+            if (enemyCtrl != null)
+            {
+                def = enemyCtrl.DEF;
+                typeMod = CalculateElementalModifier(type, enemyCtrl.Data);
+            }
 
             // 크리티컬 (플레이어인 경우)
             float critMult = 1f;
-            var pStats = attacker.GetComponent<Player.PlayerStats>();
+            bool isCrit = false;
+            var pStats = attacker != null ? attacker.GetComponent<Player.PlayerStats>() : null;
             if (pStats != null)
             {
                 if (Random.value < pStats.CalculateFinalStat(Player.StatType.CRT))
                 {
                     critMult = pStats.CalculateFinalStat(Player.StatType.CDMG);
+                    isCrit = true;
                 }
             }
 
-            // 데미지 계산
-            float defReduction = 100f / (100f + def);
+            // 데미지 공식 계산 (GDD 1.2)
+            float defReduction = 100f / (100f + Mathf.Max(0, def));
             float randomMod = Random.Range(0.9f, 1.1f);
             
             float finalDamage = baseDamage * skillMultiplier * defReduction * typeMod * critMult * randomMod;
+            finalDamage = Mathf.Max(1f, finalDamage);
 
             // 적용
-            if (enemyStats != null) enemyStats.TakeDamage(finalDamage);
+            if (enemyCtrl != null)
+            {
+                enemyCtrl.TakeDamage(finalDamage);
+            }
+            else
+            {
+                var pDefStats = defender.GetComponent<Player.PlayerStats>();
+                if (pDefStats != null) pDefStats.TakeDamage(finalDamage, type);
+            }
 
             // 콤보 증가 (플레이어 공격시)
             if (pStats != null)
             {
                 _comboCount++;
                 _lastHitTime = Time.time;
+
+                var hud = FindObjectOfType<DungeonHUDScreen>();
+                if (hud != null && _comboCount >= 3)
+                {
+                    hud.ShowCombo(_comboCount);
+                }
             }
 
             // 데미지 텍스트 띄우기
-            SpawnDamageText(defender.transform.position, finalDamage, critMult > 1f, type);
+            SpawnDamageText(defender.transform.position, finalDamage, isCrit, type);
         }
 
         public void RegisterKill()
@@ -76,24 +105,74 @@ namespace MiniKingdom.Combat
             _comboCount = 0;
         }
 
-        private float GetTypeModifier(DamageType attackType, DamageType defenseType)
+        public void ResetRunStats()
         {
-            // 상성 로직: Physical -> Magic (1.3), Magic -> Nature (1.3), Nature -> Physical (1.3)
-            if (attackType == DamageType.Physical && defenseType == DamageType.Magic) return 1.3f;
-            if (attackType == DamageType.Magic && defenseType == DamageType.Nature) return 1.3f;
-            if (attackType == DamageType.Nature && defenseType == DamageType.Physical) return 1.3f;
-            
-            // 역상성
-            if (attackType == DamageType.Physical && defenseType == DamageType.Nature) return 0.7f;
-            if (attackType == DamageType.Magic && defenseType == DamageType.Physical) return 0.7f;
-            if (attackType == DamageType.Nature && defenseType == DamageType.Magic) return 0.7f;
+            _killsThisRun = 0;
+            _comboCount = 0;
+        }
 
-            return 1.0f; // Neutral
+        private float CalculateElementalModifier(DamageType attackType, EnemyData enemyData)
+        {
+            if (enemyData == null) return 1.0f;
+
+            // 약점 속성: 데미지 50% 증가 (+50%)
+            if (enemyData.weakness == attackType)
+            {
+                return 1.5f;
+            }
+
+            // 저항 속성: 데미지 50% 감소 (-50%)
+            if (enemyData.resistance == attackType)
+            {
+                return 0.5f;
+            }
+
+            return 1.0f;
         }
 
         private void SpawnDamageText(Vector3 pos, float damage, bool isCrit, DamageType type)
         {
-            // TODO: ObjectPool을 이용해 데미지 텍스트 띄우기
+            Color color = Color.white;
+            if (isCrit)
+            {
+                color = new Color(1f, 0.85f, 0.2f); // Golden yellow
+            }
+            else
+            {
+                switch (type)
+                {
+                    case DamageType.Magic:
+                        color = new Color(0.7f, 0.4f, 1f); // Purple/Magic
+                        break;
+                    case DamageType.Nature:
+                        color = new Color(0.4f, 0.9f, 0.4f); // Green/Nature
+                        break;
+                    default:
+                        color = Color.white; // Physical
+                        break;
+                }
+            }
+
+            string text = isCrit ? $"💥 {Mathf.RoundToInt(damage)}" : $"{Mathf.RoundToInt(damage)}";
+
+            if (floatingTextPrefab != null)
+            {
+                Transform parent = worldSpaceCanvas != null ? worldSpaceCanvas.transform : null;
+                var ft = Instantiate(floatingTextPrefab, parent);
+                ft.Setup(text, color, pos);
+            }
+            else
+            {
+                // Fallback: 씬 내 World Canvas 동적 생성 또는 찾기
+                if (worldSpaceCanvas == null)
+                {
+                    var existingCanvas = GameObject.Find("WorldSpaceCanvas");
+                    if (existingCanvas != null)
+                    {
+                        worldSpaceCanvas = existingCanvas.GetComponent<Canvas>();
+                    }
+                }
+            }
         }
     }
 }

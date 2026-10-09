@@ -56,9 +56,15 @@ namespace MiniKingdom.UI
 
         private void OnDepartClicked()
         {
-            // 던전 진입
-            UIManager.Instance.Show(ScreenType.InDungeon_HUD, false);
-            // DungeonRunManager.Instance.StartRun(selectedDungeonId);
+            if (Application.CanStreamedLevelBeLoaded("Dungeon"))
+            {
+                UnityEngine.SceneManagement.SceneManager.LoadScene("Dungeon");
+            }
+            else
+            {
+                UIManager.Instance?.Show(ScreenType.InDungeon_HUD, false);
+                DungeonRunManager.Instance?.StartRun();
+            }
         }
     }
 }

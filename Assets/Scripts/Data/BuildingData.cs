@@ -55,10 +55,14 @@ namespace MiniKingdom.Data
         public string description;
         public BuildingCategory category;
         public int maxLevel = 5;
+        public int MaxLevel => maxLevel;
         public Sprite icon;
         public int unlockKingdomLevel;
 
         [Tooltip("레벨별 데이터 배열 (인덱스 0 = 레벨 1)")]
         public BuildingLevelData[] levelData;
+
+        public float BaseBuildTime => (levelData != null && levelData.Length > 0) ? levelData[0].buildTime : 10f;
+        public List<StatModifier> BuffModifiers = new List<StatModifier>();
     }
 }

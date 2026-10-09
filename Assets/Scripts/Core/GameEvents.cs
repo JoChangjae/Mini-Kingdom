@@ -14,6 +14,20 @@ namespace MiniKingdom.Core
         public ResourceType ResourceType;
         public int OldAmount;
         public int NewAmount;
+
+        public ResourceChangedEvent(ResourceType type, int newAmount, int oldAmount = 0)
+        {
+            ResourceType = type;
+            NewAmount = newAmount;
+            OldAmount = oldAmount;
+        }
+
+        public ResourceChangedEvent(MiniKingdom.Data.ResourceType type, int newAmount, int oldAmount = 0)
+        {
+            ResourceType = (ResourceType)(int)type;
+            NewAmount = newAmount;
+            OldAmount = oldAmount;
+        }
     }
 
     public struct BuildingBuiltEvent
@@ -40,15 +54,38 @@ namespace MiniKingdom.Core
         public int RoomIndex;
     }
 
+    public struct RoomClearedEvent { }
+
+    public struct PlayerDiedEvent { }
+
     public struct EnemyKilledEvent
     {
         public string EnemyData;
         public Vector3 Position;
+        public Enemy.EnemyController EnemyController;
+
+        public EnemyKilledEvent(Enemy.EnemyController enemy)
+        {
+            EnemyController = enemy;
+            EnemyData = enemy != null ? enemy.name : string.Empty;
+            Position = enemy != null ? enemy.transform.position : Vector3.zero;
+        }
+
+        public EnemyKilledEvent(string enemyData, Vector3 position)
+        {
+            EnemyController = null;
+            EnemyData = enemyData;
+            Position = position;
+        }
     }
 
     public struct BossKilledEvent
     {
         public string EnemyData;
+        public BossKilledEvent(string enemyData = "")
+        {
+            EnemyData = enemyData;
+        }
     }
 
     public struct PlayerLevelUpEvent
@@ -87,6 +124,15 @@ namespace MiniKingdom.Core
         public string Stats;
     }
 
+    public struct RunEndedEvent
+    {
+        public MiniKingdom.Dungeon.RunResult Result;
+        public RunEndedEvent(MiniKingdom.Dungeon.RunResult result)
+        {
+            Result = result;
+        }
+    }
+
     public struct DailyBonusRunEvent
     {
         public int RunNumber;
@@ -102,6 +148,21 @@ namespace MiniKingdom.Core
     {
         public string EntryType;
         public string EntryId;
+        public MiniKingdom.Data.DiscoveryBookEntry Entry;
+
+        public DiscoveryUnlockedEvent(MiniKingdom.Data.DiscoveryBookEntry entry)
+        {
+            Entry = entry;
+            EntryType = entry != null ? entry.category.ToString() : string.Empty;
+            EntryId = entry != null ? entry.entryId : string.Empty;
+        }
+
+        public DiscoveryUnlockedEvent(string entryType, string entryId)
+        {
+            Entry = null;
+            EntryType = entryType;
+            EntryId = entryId;
+        }
     }
 
     public struct KingdomDefenseEvent
@@ -109,9 +170,17 @@ namespace MiniKingdom.Core
         public bool Success;
         public int Score;
     }
+
     public struct WeatherChangedEvent
     {
         public MiniKingdom.Data.WeatherType WeatherType;
+        public Sprite WeatherSprite;
+
+        public WeatherChangedEvent(MiniKingdom.Data.WeatherType type, Sprite sprite = null)
+        {
+            WeatherType = type;
+            WeatherSprite = sprite;
+        }
     }
 
     public struct TaxCollectedEvent

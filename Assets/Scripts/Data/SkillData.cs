@@ -54,6 +54,15 @@ namespace MiniKingdom.Data
         public AudioClip sfxClip;
         public Sprite icon;
 
+        [Header("Level & Fusion Settings")]
+        public int maxLevel = 5;
+        public bool isFusion;
+
+        public string Id => skillId;
+        public int MaxLevel => maxLevel;
+        public bool IsFusion => isFusion;
+        public int CurrentLevel { get; set; } = 1;
+
         [Header("Unlock Condition")]
         public string unlockBuildingId;
         public int unlockBuildingLevel;

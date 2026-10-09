@@ -66,14 +66,26 @@ namespace MiniKingdom.UI
         /// </summary>
         public void Show(ScreenType screenType, bool pushToStack = true)
         {
-            if (_instantiatedScreens.TryGetValue(screenType, out var screen))
+            if (!_instantiatedScreens.TryGetValue(screenType, out var screen))
+            {
+                foreach (var inScene in FindObjectsOfType<ScreenBase>(true))
+                {
+                    if (inScene.GetScreenType() == screenType)
+                    {
+                        _instantiatedScreens[screenType] = inScene;
+                        screen = inScene;
+                        break;
+                    }
+                }
+            }
+
+            if (screen != null)
             {
                 if (pushToStack)
                 {
-                    if (_screenStack.Count > 0)
+                    if (_screenStack.Count > 0 && _instantiatedScreens.TryGetValue(_screenStack.Peek(), out var prev))
                     {
-                        var previousScreen = _instantiatedScreens[_screenStack.Peek()];
-                        previousScreen.Hide();
+                        prev.Hide();
                     }
                     _screenStack.Push(screenType);
                 }

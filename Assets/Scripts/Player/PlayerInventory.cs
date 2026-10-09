@@ -98,10 +98,14 @@ namespace MiniKingdom.Player
 
         private void LoadInventory()
         {
-            // Mock load
-            // var data = SaveManager.LoadInventory();
-            // _resources = data.Resources;
-            // foreach(var eq in data.Equipment) Equip(eq.Item, eq.Slot);
+            var data = SaveManager.LoadInventory();
+            if (data != null && data.Resources != null)
+            {
+                foreach (var r in data.Resources)
+                {
+                    _resources[r.Type] = r.Amount;
+                }
+            }
         }
     }
 }

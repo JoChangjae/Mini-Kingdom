@@ -19,6 +19,7 @@ namespace MiniKingdom.Kingdom
     {
         public WeatherType Type;
         public string DisplayName;
+        public Sprite WeatherIcon;
         [Tooltip("Optional particle effect for the weather")]
         public GameObject WeatherEffectPrefab;
     }
@@ -26,6 +27,7 @@ namespace MiniKingdom.Kingdom
     public struct WeatherChangedEvent
     {
         public WeatherData NewWeather;
+        public Sprite WeatherSprite => NewWeather.WeatherIcon;
     }
 
     /// <summary>
@@ -81,7 +83,7 @@ namespace MiniKingdom.Kingdom
         private void PublishWeatherEvent()
         {
             // 날씨 변경 이벤트 발행
-            // EventBus.Publish(new WeatherChangedEvent { NewWeather = currentWeather });
+            EventBus.Publish(new WeatherChangedEvent { NewWeather = currentWeather });
             Debug.Log($"[WeatherSystem] Weather changed to: {currentWeather.Type}");
         }
 

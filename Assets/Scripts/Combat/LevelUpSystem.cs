@@ -2,56 +2,89 @@ using System.Collections.Generic;
 using System.Linq;
 using UnityEngine;
 using MiniKingdom.Core;
+using MiniKingdom.Data;
+using MiniKingdom.Utils;
 
 namespace MiniKingdom.Combat
 {
-    /// <summary>
-    /// Event published when a skill fusion upgrade is selected.
-    /// </summary>
-    public struct SkillFusionEvent
+    [System.Serializable]
+    public class FusionRecipe
     {
-        public string ResultingSkillId;
+        public string RequiredSkill1Id;
+        public string RequiredSkill2Id;
+        public SkillData ResultingSkill;
     }
 
     /// <summary>
     /// 게임 내 레벨업 및 3선택지 업그레이드 시스템을 관리합니다. (Manages in-run level up and 3-choice upgrades)
     /// </summary>
-    public class LevelUpSystem : MonoBehaviour
+    public class LevelUpSystem : Singleton<LevelUpSystem>
     {
-        [SerializeField] private List<SkillData> _availableSkills;
-        [SerializeField] private List<FusionRecipe> _fusionRecipes;
-        
-        // 현재 플레이어가 보유한 스킬 리스트
-        private List<SkillData> _playerSkills = new List<SkillData>();
+        [SerializeField] private List<SkillData> _availableSkills = new List<SkillData>();
+        [SerializeField] private List<FusionRecipe> _fusionRecipes = new List<FusionRecipe>();
+
+        // 런 타임 플레이어 스킬 레벨 추적 (SkillId -> CurrentLevel)
+        private Dictionary<string, int> _playerSkillLevels = new Dictionary<string, int>();
+        private List<SkillData> _currentChoices = new List<SkillData>();
+
+        public IReadOnlyList<SkillData> CurrentChoices => _currentChoices;
+
+        public void SetAvailableSkills(List<SkillData> skills)
+        {
+            _availableSkills = skills ?? new List<SkillData>();
+        }
+
+        public void SetFusionRecipes(List<FusionRecipe> recipes)
+        {
+            _fusionRecipes = recipes ?? new List<FusionRecipe>();
+        }
+
+        public void ResetSkillsForRun()
+        {
+            _playerSkillLevels.Clear();
+            _currentChoices.Clear();
+        }
 
         /// <summary>
         /// 레벨업 시 제공할 3개의 선택지를 생성합니다. (Generates 3 choices on level up)
         /// </summary>
         public List<SkillData> GenerateUpgradeChoices()
         {
-            List<SkillData> choices = new List<SkillData>();
-            
+            _currentChoices.Clear();
+
             // 1. 융합(Fusion) 가능 여부 체크
             SkillData fusionSkill = CheckForSkillFusions();
             if (fusionSkill != null)
             {
                 // 융합 스킬은 최우선순위로 풀에 추가됨
-                choices.Add(fusionSkill);
+                _currentChoices.Add(fusionSkill);
             }
 
             // 2. 일반 스킬들 중에서 무작위 선택하여 3개 채우기
-            var pool = _availableSkills.Where(s => !choices.Contains(s) && CanAcquire(s)).ToList();
-            
-            // 셔플 후 추가 (단순 구현)
-            Shuffle(pool);
-
-            int remainingSlots = 3 - choices.Count;
-            for (int i = 0; i < remainingSlots && i < pool.Count; i++)
+            if (_availableSkills != null)
             {
-                choices.Add(pool[i]);
+                var pool = _availableSkills.Where(s => s != null && !_currentChoices.Contains(s) && CanAcquire(s)).ToList();
+                Shuffle(pool);
+
+                int remainingSlots = 3 - _currentChoices.Count;
+                for (int i = 0; i < remainingSlots && i < pool.Count; i++)
+                {
+                    _currentChoices.Add(pool[i]);
+                }
             }
 
-            return choices;
+            return _currentChoices;
+        }
+
+        /// <summary>
+        /// 인덱스로 선택지 업그레이드를 적용합니다.
+        /// </summary>
+        public void ApplyUpgradeByIndex(int index)
+        {
+            if (index >= 0 && index < _currentChoices.Count)
+            {
+                ApplyUpgrade(_currentChoices[index]);
+            }
         }
 
         /// <summary>
@@ -59,21 +92,41 @@ namespace MiniKingdom.Combat
         /// </summary>
         public void ApplyUpgrade(SkillData selectedSkill)
         {
-            if (selectedSkill.IsFusion)
-            {
-                EventBus.Publish(new SkillFusionEvent { ResultingSkillId = selectedSkill.Id });
-            }
+            if (selectedSkill == null) return;
 
-            // 플레이어 스킬 목록에 추가하거나 레벨 증가
-            var existing = _playerSkills.FirstOrDefault(s => s.Id == selectedSkill.Id);
-            if (existing != null)
+            string id = selectedSkill.Id;
+            if (_playerSkillLevels.ContainsKey(id))
             {
-                existing.CurrentLevel++;
+                _playerSkillLevels[id]++;
             }
             else
             {
-                _playerSkills.Add(selectedSkill);
+                _playerSkillLevels[id] = 1;
             }
+
+            selectedSkill.CurrentLevel = _playerSkillLevels[id];
+
+            if (selectedSkill.IsFusion)
+            {
+                EventBus.Publish(new GameEvents.SkillFusionEvent { FusionData = null });
+                Debug.Log($"[LevelUpSystem] 융합 스킬 발동! {selectedSkill.skillName}");
+            }
+
+            // 플레이어에게 스탯 또는 스킬 효과 반영
+            var playerStats = FindObjectOfType<Player.PlayerStats>();
+            if (playerStats != null)
+            {
+                // 기본 데미지 배율 증가 버프 적용
+                playerStats.AddModifier(new StatModifier
+                {
+                    statType = StatType.ATK,
+                    value = 0.15f,
+                    isPercentage = true
+                });
+            }
+
+            EventBus.Publish(new GameEvents.UpgradeChosenEvent { UpgradeData = selectedSkill.skillName });
+            Debug.Log($"[LevelUpSystem] 스킬 선택 완료: {selectedSkill.skillName} (Lv.{_playerSkillLevels[id]})");
         }
 
         /// <summary>
@@ -81,12 +134,20 @@ namespace MiniKingdom.Combat
         /// </summary>
         private SkillData CheckForSkillFusions()
         {
+            if (_fusionRecipes == null) return null;
+
             foreach (var recipe in _fusionRecipes)
             {
-                if (IsSkillMaxLevel(recipe.RequiredSkill1Id) && IsSkillMaxLevel(recipe.RequiredSkill2Id))
+                if (recipe != null && recipe.ResultingSkill != null)
                 {
-                    // 융합 결과를 반환
-                    return recipe.ResultingSkill;
+                    if (IsSkillMaxLevel(recipe.RequiredSkill1Id) && IsSkillMaxLevel(recipe.RequiredSkill2Id))
+                    {
+                        // 이미 획득한 융합 스킬이 아니라면 반환
+                        if (!_playerSkillLevels.ContainsKey(recipe.ResultingSkill.Id))
+                        {
+                            return recipe.ResultingSkill;
+                        }
+                    }
                 }
             }
             return null;
@@ -94,16 +155,23 @@ namespace MiniKingdom.Combat
 
         private bool IsSkillMaxLevel(string skillId)
         {
-            var skill = _playerSkills.FirstOrDefault(s => s.Id == skillId);
-            return skill != null && skill.CurrentLevel >= skill.MaxLevel;
+            if (string.IsNullOrEmpty(skillId)) return false;
+            if (_playerSkillLevels.TryGetValue(skillId, out int level))
+            {
+                var skillData = _availableSkills.FirstOrDefault(s => s != null && s.Id == skillId);
+                int maxLvl = skillData != null ? skillData.MaxLevel : 5;
+                return level >= maxLvl;
+            }
+            return false;
         }
 
         private bool CanAcquire(SkillData skill)
         {
-            // 최대 레벨에 도달하지 않은 스킬만 획득 가능
-            var currentSkill = _playerSkills.FirstOrDefault(s => s.Id == skill.Id);
-            if (currentSkill != null && currentSkill.CurrentLevel >= currentSkill.MaxLevel)
-                return false;
+            if (skill == null) return false;
+            if (_playerSkillLevels.TryGetValue(skill.Id, out int level))
+            {
+                return level < skill.MaxLevel;
+            }
             return true;
         }
 

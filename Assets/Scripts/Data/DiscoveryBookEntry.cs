@@ -24,6 +24,7 @@ namespace MiniKingdom.Data
     public class DiscoveryBookEntry : ScriptableObject
     {
         public string entryId;
+        public string Id => entryId;
         public string entryName;
         public EntryCategory category;
 

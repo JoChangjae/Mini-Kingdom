@@ -76,19 +76,37 @@ namespace MiniKingdom.UI.Screens
 
         private void UpdateKingdomUI()
         {
-            // 왕국 레벨 및 자원 업데이트 (임시 데이터 연동)
-            kingdomLevelText.text = "Lv. 5";
-            goldBar.SetAmount(1500);
-            woodBar.SetAmount(300);
-            stoneBar.SetAmount(150);
+            if (ResourceManager.Instance != null)
+            {
+                if (goldBar != null) goldBar.SetAmount(ResourceManager.Instance.GetResource(Data.ResourceType.Gold));
+                if (woodBar != null) woodBar.SetAmount(ResourceManager.Instance.GetResource(Data.ResourceType.Wood));
+                if (stoneBar != null) stoneBar.SetAmount(ResourceManager.Instance.GetResource(Data.ResourceType.Stone));
+            }
+            else
+            {
+                if (goldBar != null) goldBar.SetAmount(1500);
+                if (woodBar != null) woodBar.SetAmount(300);
+                if (stoneBar != null) stoneBar.SetAmount(150);
+            }
+
+            if (BuildingManager.Instance != null && kingdomLevelText != null)
+            {
+                int lvl = Mathf.Max(1, BuildingManager.Instance.GetTotalKingdomLevel());
+                kingdomLevelText.text = $"Lv. {lvl}";
+            }
+            else if (kingdomLevelText != null)
+            {
+                kingdomLevelText.text = "Lv. 1";
+            }
             
-            dailyBonusBadge.SetActive(true); // Example logic
-            activeDecreeText.text = "풍년: 골드 획득 +10%";
+            if (dailyBonusBadge != null) dailyBonusBadge.SetActive(true);
+            if (activeDecreeText != null) activeDecreeText.text = "풍년: 골드 획득 +10%";
         }
 
         private void UpdateTreasuryUI()
         {
-            pendingGoldText.text = _pendingGold > 0 ? $"+{_pendingGold} Gold" : "No Taxes";
+            if (pendingGoldText != null)
+                pendingGoldText.text = _pendingGold > 0 ? $"+{_pendingGold} Gold" : "No Taxes";
         }
 
         private void OnTreasuryClicked()
@@ -96,10 +114,13 @@ namespace MiniKingdom.UI.Screens
             if (_pendingGold > 0)
             {
                 // 세금 징수 (Collect taxes)
-                PopupManager.Instance.ShowToast($"+{_pendingGold} 골드 획득!");
-                // Here we would add to actual player resources
+                PopupManager.Instance?.ShowToast($"+{_pendingGold} 골드 획득!");
+                ResourceManager.Instance?.AddResource(Data.ResourceType.Gold, _pendingGold);
+                SaveManager.Instance?.SaveGame();
+
                 _pendingGold = 0;
                 UpdateTreasuryUI();
+                UpdateKingdomUI();
             }
         }
         

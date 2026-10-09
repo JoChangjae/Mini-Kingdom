@@ -56,6 +56,11 @@ namespace MiniKingdom.Data
         [Header("Set")]
         public int setId = -1; // -1 if none
 
+        public int currentLevel = 1;
+        public int CurrentLevel { get => currentLevel; set => currentLevel = value; }
+        public string SetId => setId >= 0 ? setId.ToString() : string.Empty;
+        public StatModifier[] Modifiers => baseStats ?? Array.Empty<StatModifier>();
+
         [Header("Visuals")]
         public Sprite icon;
         [TextArea]

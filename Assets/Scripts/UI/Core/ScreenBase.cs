@@ -20,6 +20,7 @@ namespace MiniKingdom.UI
         protected virtual void Awake()
         {
             canvasGroup = GetComponent<CanvasGroup>();
+            if (canvasGroup == null) canvasGroup = gameObject.AddComponent<CanvasGroup>();
         }
 
         public ScreenType GetScreenType() => screenType;

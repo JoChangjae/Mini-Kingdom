@@ -37,7 +37,7 @@ namespace MiniKingdom.Kingdom
         private void CalculateOfflineTaxes()
         {
             // 오프라인 방치 보상 계산
-            DateTime lastLogoutTime = SaveManager.lastLogoutTime; 
+            DateTime lastLogoutTime = SaveManager.LastLogoutTime; 
             
             // 만약 lastLogoutTime이 초기값이라면 (예: 첫 접속), 보상 없음
             if (lastLogoutTime == default(DateTime))

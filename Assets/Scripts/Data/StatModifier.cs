@@ -42,5 +42,22 @@ namespace MiniKingdom.Data
             }
             return baseValue + value;
         }
+
+        // Bridge properties for compatibility with PlayerStats and BuildingManager
+        public MiniKingdom.Player.StatType Type
+        {
+            get => (MiniKingdom.Player.StatType)(int)statType;
+            set => statType = (StatType)(int)value;
+        }
+        public float Value
+        {
+            get => value;
+            set => this.value = value;
+        }
+        public bool IsFlat
+        {
+            get => !isPercentage;
+            set => isPercentage = !value;
+        }
     }
 }

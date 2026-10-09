@@ -12,6 +12,11 @@ namespace MiniKingdom.Data
         public int maxAmount;
         [Range(0f, 1f)]
         public float dropChance;
+
+        public float DropChance => dropChance;
+        public ResourceType ResourceType => resourceType;
+        public int MinAmount => minAmount;
+        public int MaxAmount => maxAmount;
     }
 
     [Serializable]
@@ -25,6 +30,7 @@ namespace MiniKingdom.Data
     public class LootTable
     {
         public LootEntry[] entries;
+        public LootEntry[] Items => entries ?? Array.Empty<LootEntry>();
 
         public List<LootResult> Roll(float bonusMultiplier = 1f)
         {

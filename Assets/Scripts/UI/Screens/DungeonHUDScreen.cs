@@ -2,6 +2,8 @@ using UnityEngine;
 using UnityEngine.UI;
 using TMPro;
 using System.Collections;
+using MiniKingdom.Core;
+using MiniKingdom.Player;
 
 namespace MiniKingdom.UI
 {
@@ -30,62 +32,109 @@ namespace MiniKingdom.UI
         [SerializeField] private Image perfectDodgeFlash;
 
         private float _currentSpeed = 1f;
+        private PlayerStats _playerStats;
 
         protected override void OnScreenShow()
         {
-            bossHpPanel.SetActive(false);
-            comboPanel.SetActive(false);
-            perfectDodgeFlash.color = new Color(1, 1, 1, 0);
+            if (bossHpPanel != null) bossHpPanel.SetActive(false);
+            if (comboPanel != null) comboPanel.SetActive(false);
+            if (perfectDodgeFlash != null) perfectDodgeFlash.color = new Color(1, 1, 1, 0);
 
-            pauseButton.onClick.AddListener(OnPauseClicked);
-            speedToggleBtn.onClick.AddListener(OnSpeedToggleClicked);
+            if (pauseButton != null) pauseButton.onClick.AddListener(OnPauseClicked);
+            if (speedToggleBtn != null) speedToggleBtn.onClick.AddListener(OnSpeedToggleClicked);
+
+            EventBus.Subscribe<GameEvents.PerfectDodgeEvent>(OnPerfectDodgeEvent);
+            EventBus.Subscribe<GameEvents.PlayerDamagedEvent>(OnPlayerDamaged);
+            EventBus.Subscribe<GameEvents.PlayerHealedEvent>(OnPlayerHealed);
+
+            _playerStats = FindObjectOfType<PlayerStats>();
+            if (_playerStats != null)
+            {
+                UpdateHP(Mathf.RoundToInt(_playerStats.CurrentHP), Mathf.RoundToInt(_playerStats.CalculateFinalStat(StatType.MaxHP)));
+            }
         }
 
         protected override void OnScreenHide()
         {
-            pauseButton.onClick.RemoveAllListeners();
-            speedToggleBtn.onClick.RemoveAllListeners();
+            if (pauseButton != null) pauseButton.onClick.RemoveAllListeners();
+            if (speedToggleBtn != null) speedToggleBtn.onClick.RemoveAllListeners();
+
+            EventBus.Unsubscribe<GameEvents.PerfectDodgeEvent>(OnPerfectDodgeEvent);
+            EventBus.Unsubscribe<GameEvents.PlayerDamagedEvent>(OnPlayerDamaged);
+            EventBus.Unsubscribe<GameEvents.PlayerHealedEvent>(OnPlayerHealed);
+        }
+
+        private void OnPerfectDodgeEvent(GameEvents.PerfectDodgeEvent e)
+        {
+            TriggerPerfectDodge();
+        }
+
+        private void OnPlayerDamaged(GameEvents.PlayerDamagedEvent e)
+        {
+            if (_playerStats != null)
+            {
+                UpdateHP(Mathf.RoundToInt(e.RemainingHP), Mathf.RoundToInt(_playerStats.CalculateFinalStat(StatType.MaxHP)));
+            }
+        }
+
+        private void OnPlayerHealed(GameEvents.PlayerHealedEvent e)
+        {
+            if (_playerStats != null)
+            {
+                UpdateHP(Mathf.RoundToInt(e.CurrentHP), Mathf.RoundToInt(_playerStats.CalculateFinalStat(StatType.MaxHP)));
+            }
         }
 
         protected override void OnScreenUpdate()
         {
-            // Update HP, cooldowns, etc. from CombatSystem
+            if (_playerStats != null && hpBar != null)
+            {
+                float maxHp = _playerStats.CalculateFinalStat(StatType.MaxHP);
+                UpdateHP(Mathf.RoundToInt(_playerStats.CurrentHP), Mathf.RoundToInt(maxHp));
+            }
         }
 
         public void UpdateHP(int current, int max)
         {
-            hpBar.value = (float)current / max;
-            hpText.text = $"{current}/{max}";
+            if (hpBar != null && max > 0) hpBar.value = (float)current / max;
+            if (hpText != null) hpText.text = $"{current}/{max}";
         }
 
         public void ShowCombo(int count)
         {
-            comboPanel.SetActive(true);
-            comboText.text = $"{count} Hits!";
-            UIAnimations.PunchScale(comboText.transform);
+            if (comboPanel != null) comboPanel.SetActive(true);
+            if (comboText != null)
+            {
+                comboText.text = $"{count} Hits!";
+                UIAnimations.PunchScale(comboText.transform);
+            }
         }
 
         public void TriggerPerfectDodge()
         {
-            StartCoroutine(FlashPerfectDodge());
+            if (perfectDodgeFlash != null)
+            {
+                StartCoroutine(FlashPerfectDodge());
+            }
         }
 
         private IEnumerator FlashPerfectDodge()
         {
-            perfectDodgeFlash.color = new Color(1f, 1f, 0.5f, 0.5f);
-            yield return new WaitForSeconds(0.1f);
-            perfectDodgeFlash.color = new Color(1f, 1f, 0.5f, 0f);
+            if (perfectDodgeFlash == null) yield break;
+            perfectDodgeFlash.color = new Color(1f, 0.9f, 0.2f, 0.6f); // Golden yellow flash
+            yield return new WaitForSecondsRealtime(0.15f);
+            perfectDodgeFlash.color = new Color(1f, 0.9f, 0.2f, 0f);
         }
 
         private void OnPauseClicked()
         {
-            UIManager.Instance.Show(ScreenType.Pause);
+            UIManager.Instance?.Show(ScreenType.Pause);
         }
 
         private void OnSpeedToggleClicked()
         {
             _currentSpeed = _currentSpeed == 1f ? 2f : 1f;
-            speedText.text = $"x{_currentSpeed}";
+            if (speedText != null) speedText.text = $"x{_currentSpeed}";
             Time.timeScale = _currentSpeed;
         }
     }

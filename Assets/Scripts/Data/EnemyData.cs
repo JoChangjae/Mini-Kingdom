@@ -57,6 +57,16 @@ namespace MiniKingdom.Data
         public float attackSpeed;
         public float attackRange;
 
+        // Convenient getters for controller compatibility
+        public float MaxHP => hp;
+        public float DEF => def;
+        public float ATK => atk;
+        public float MoveSpeed => moveSpeed > 0 ? moveSpeed : 2f;
+        public float AttackRange => attackRange > 0 ? attackRange : 1.5f;
+        public float DetectionRange => 8f;
+        public float AttackCooldown => attackSpeed > 0 ? (1f / attackSpeed) : 1.5f;
+        public float WindUpTime => 0.4f;
+
         [Header("Combat Attributes")]
         public DamageType weakness;
         public DamageType resistance;
