@@ -186,7 +186,7 @@ namespace MiniKingdom.Enemy
         {
             _currentState = EnemyState.Dead;
             Combat.CombatSystem.Instance?.RegisterKill();
-            EventBus.Publish(new GameEvents.EnemyKilledEvent(this));
+            EventBus.Publish(new EnemyKilledEvent(this));
             
             // Drop loot
             GetComponent<MiniKingdom.Items.LootManager>()?.DropLoot(transform.position);

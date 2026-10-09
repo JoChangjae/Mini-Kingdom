@@ -20,7 +20,12 @@ namespace MiniKingdom.UI
         RoyalDecree,
         Settings,
         Pause,
-        KingdomDefense
+        KingdomDefense,
+        BranchSelection,
+        RestRoom,
+        DungeonShop,
+        FishingMinigame,
+        RelicPopup
     }
 
     /// <summary>
@@ -127,6 +132,14 @@ namespace MiniKingdom.UI
                     Show(screenType);
                 }
             }
+        }
+
+        /// <summary>
+        /// Closes current screen (alias for Pop)
+        /// </summary>
+        public void CloseCurrent()
+        {
+            Pop();
         }
 
         /// <summary>

@@ -1,0 +1,30 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: f09a4f7eae3776249a360573b2a49d10, type: 3}
+  m_Name: Forest_Dungeon
+  m_EditorClassIdentifier: Assembly-CSharp::MiniKingdom.Data.DungeonData
+  dungeonId: dungeon_forest
+  dungeonName: "\uC218\uD480 \uC232 (Forest)"
+  description: "\uC6B8\uCC3D\uD55C \uC232\uC18D\uC5D0 \uB3C4\uC0AC\uB9B0 \uBAAC\uC2A4\uD130\uB4E4\uC744 \uBB3C\uB9AC\uCE58\uACE0 \uBAA9\uC7AC\uC640 \uC57D\uCD08\uB97C \uC218\uC9D1\uD558\uC138\uC694."
+  theme: 0
+  unlockKingdomLevel: 1
+  difficulty: 1
+  roomCountRange: {x: 10, y: 15}
+  primaryResources: 0100000000000000i
+  enemyPool:
+  - {fileID: 11400000, guid: f0325bf8ce9eedf49a30502efdc7d367, type: 2}
+  - {fileID: 11400000, guid: 4d25559c30a27d74ab1e3d703edc340c, type: 2}
+  boss: {fileID: 11400000, guid: 94151625583cc3842bd0d6a0e5a42a05, type: 2}
+  roomTypeWeights: []
+  backgroundSprite: {fileID: 0}
+  bgmClip: {fileID: 0}
+  specialMechanicDescription: "\uB364\uBD88 \uC9C0\uD615 \uBC0F \uB3C5\uC131 \uBC84\uC12F \uAE30\uBBF9"

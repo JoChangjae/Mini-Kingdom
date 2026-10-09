@@ -4,6 +4,7 @@ using MiniKingdom.Combat;
 using MiniKingdom.Kingdom;
 using MiniKingdom.Player;
 using MiniKingdom.UI;
+using MiniKingdom.Utils;
 
 namespace MiniKingdom.Dungeon
 {
@@ -172,8 +173,8 @@ namespace MiniKingdom.Dungeon
             SaveManager.Instance?.SaveGame();
 
             // 런 완료 이벤트 발행
-            EventBus.Publish(new GameEvents.RunCompletedEvent { Success = isVictory, Stats = $"Rooms: {_result.RoomsCleared}" });
-            EventBus.Publish(new GameEvents.RunEndedEvent(_result));
+            EventBus.Publish(new RunCompletedEvent { Success = isVictory, Stats = $"Rooms: {_result.RoomsCleared}" });
+            EventBus.Publish(new RunEndedEvent(_result));
 
             // 결과 화면 표시
             if (UIManager.Instance != null)
@@ -191,15 +192,15 @@ namespace MiniKingdom.Dungeon
 
         private void OnEnable()
         {
-            EventBus.Subscribe<GameEvents.PlayerDiedEvent>(OnPlayerDied);
+            EventBus.Subscribe<PlayerDiedEvent>(OnPlayerDied);
         }
 
         private void OnDisable()
         {
-            EventBus.Unsubscribe<GameEvents.PlayerDiedEvent>(OnPlayerDied);
+            EventBus.Unsubscribe<PlayerDiedEvent>(OnPlayerDied);
         }
 
-        private void OnPlayerDied(GameEvents.PlayerDiedEvent e)
+        private void OnPlayerDied(PlayerDiedEvent e)
         {
             EndRun(false);
         }

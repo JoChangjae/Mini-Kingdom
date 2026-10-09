@@ -2,6 +2,7 @@ using System.Collections.Generic;
 using UnityEngine;
 using MiniKingdom.Core;
 using MiniKingdom.Data;
+using MiniKingdom.Utils;
 
 namespace MiniKingdom.Kingdom
 {
@@ -18,7 +19,7 @@ namespace MiniKingdom.Kingdom
             {
                 _unlockedEntries.Add(entry.Id);
                 CheckMilestones();
-                EventBus.Publish(new GameEvents.DiscoveryUnlockedEvent(entry));
+                EventBus.Publish(new DiscoveryUnlockedEvent(entry));
             }
         }
 

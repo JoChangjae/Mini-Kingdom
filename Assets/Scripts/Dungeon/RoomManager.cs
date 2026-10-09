@@ -35,6 +35,12 @@ namespace MiniKingdom.Dungeon
                     break;
 
                 case RoomState.Active:
+                    if (_currentConfig == null)
+                    {
+                        ChangeState(RoomState.Clear);
+                        break;
+                    }
+
                     if (_currentConfig.Type == RoomType.Combat || _currentConfig.Type == RoomType.Boss)
                     {
                         var spawner = GetComponent<Enemy.EnemySpawner>();
@@ -44,13 +50,47 @@ namespace MiniKingdom.Dungeon
                         }
                         else
                         {
-                            // 스포너가 없는 경우 3초 후 자동 클리어
                             Invoke(nameof(ForceClear), 3f);
                         }
                     }
+                    else if (_currentConfig.Type == RoomType.Rest)
+                    {
+                        if (UIManager.Instance != null)
+                        {
+                            UIManager.Instance.Show(ScreenType.RestRoom);
+                        }
+                        else
+                        {
+                            ChangeState(RoomState.Clear);
+                        }
+                    }
+                    else if (_currentConfig.Type == RoomType.Shop)
+                    {
+                        if (UIManager.Instance != null)
+                        {
+                            UIManager.Instance.Show(ScreenType.DungeonShop);
+                        }
+                        else
+                        {
+                            ChangeState(RoomState.Clear);
+                        }
+                    }
+                    else if (_currentConfig.Type == RoomType.Treasure)
+                    {
+                        if (UIManager.Instance != null)
+                        {
+                            var relicPopup = FindObjectOfType<RelicPopupUI>(true);
+                            if (relicPopup != null)
+                            {
+                                relicPopup.Setup(null, "황금 왕관 유물", "고대 왕의 권능이 깃든 보물", "골드 획득량 +20%");
+                            }
+                            UIManager.Instance.Show(ScreenType.RelicPopup);
+                        }
+                        GrantRoomRewards();
+                        Invoke(nameof(AdvanceToNextRoom), 2f);
+                    }
                     else
                     {
-                        // 비전투 방(휴식, 상점, 보물 등)은 즉시 클리어
                         ChangeState(RoomState.Clear);
                     }
                     break;
@@ -62,14 +102,24 @@ namespace MiniKingdom.Dungeon
 
                 case RoomState.Reward:
                     GrantRoomRewards();
-                    // 보상 획득 및 레벨업 체크 후 다음 방으로 이동
-                    Invoke(nameof(AdvanceToNextRoom), 2f);
+                    // 보상 획득 및 레벨업 체크 후 다음 방 또는 분기 선택으로 이동
+                    Invoke(nameof(AdvanceToNextRoom), 1.5f);
                     break;
 
                 case RoomState.Exit:
-                    if (DungeonRunManager.Instance != null)
+                    if (_currentConfig != null && _currentConfig.IsBranch && _currentConfig.NextB != null && UIManager.Instance != null)
                     {
-                        DungeonRunManager.Instance.MoveToNextRoom();
+                        // 2갈래 길 선택 화면 띄우기
+                        var branchScreen = FindObjectOfType<BranchSelectionScreen>(true);
+                        if (branchScreen != null)
+                        {
+                            branchScreen.SetupBranches(_currentConfig.NextA, _currentConfig.NextB);
+                        }
+                        UIManager.Instance.Show(ScreenType.BranchSelection);
+                    }
+                    else if (DungeonRunManager.Instance != null)
+                    {
+                        DungeonRunManager.Instance.MoveToNextRoom(false);
                     }
                     break;
             }
@@ -107,17 +157,17 @@ namespace MiniKingdom.Dungeon
 
         private void OnEnable()
         {
-            EventBus.Subscribe<GameEvents.RoomClearedEvent>(OnRoomCleared);
-            EventBus.Subscribe<GameEvents.BossKilledEvent>(OnBossKilled);
+            EventBus.Subscribe<RoomClearedEvent>(OnRoomCleared);
+            EventBus.Subscribe<BossKilledEvent>(OnBossKilled);
         }
 
         private void OnDisable()
         {
-            EventBus.Unsubscribe<GameEvents.RoomClearedEvent>(OnRoomCleared);
-            EventBus.Unsubscribe<GameEvents.BossKilledEvent>(OnBossKilled);
+            EventBus.Unsubscribe<RoomClearedEvent>(OnRoomCleared);
+            EventBus.Unsubscribe<BossKilledEvent>(OnBossKilled);
         }
 
-        private void OnRoomCleared(GameEvents.RoomClearedEvent e)
+        private void OnRoomCleared(RoomClearedEvent e)
         {
             if (_state == RoomState.Active)
             {
@@ -125,7 +175,7 @@ namespace MiniKingdom.Dungeon
             }
         }
 
-        private void OnBossKilled(GameEvents.BossKilledEvent e)
+        private void OnBossKilled(BossKilledEvent e)
         {
             if (_state == RoomState.Active)
             {

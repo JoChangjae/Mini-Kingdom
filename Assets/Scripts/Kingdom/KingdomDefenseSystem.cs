@@ -1,5 +1,6 @@
 using UnityEngine;
 using MiniKingdom.Core;
+using MiniKingdom.Utils;
 
 namespace MiniKingdom.Kingdom
 {

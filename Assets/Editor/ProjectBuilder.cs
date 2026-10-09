@@ -255,24 +255,24 @@ namespace MiniKingdom.Editor
             decreeWood.decreeId = "decree_wood_day";
             decreeWood.decreeName = "목재의 날";
             decreeWood.description = "오늘 하루 동안 던전에서 획득하는 목재 수량이 2배로 증가합니다.";
-            decreeWood.durationHours = 24;
+            decreeWood.effectsDescription = "목재 획득량 2배";
+            decreeWood.buffValues = new[] { 2.0f };
             EditorUtility.SetDirty(decreeWood);
 
             var decreeWarrior = CreateOrLoadAsset<RoyalDecreeData>("Assets/Data/Decrees/Decree_WarriorDay.asset");
             decreeWarrior.decreeId = "decree_warrior_day";
             decreeWarrior.decreeName = "전사의 날";
             decreeWarrior.description = "오늘 하루 동안 모든 던전에서 기본 공격력이 20% 증가합니다.";
-            decreeWarrior.durationHours = 24;
-            decreeWarrior.buffModifiers = new[] {
-                new StatModifier { statType = StatType.ATK, value = 0.2f, isPercentage = true }
-            };
+            decreeWarrior.effectsDescription = "기본 공격력 +20%";
+            decreeWarrior.buffValues = new[] { 0.2f };
             EditorUtility.SetDirty(decreeWarrior);
 
             var decreeMerchant = CreateOrLoadAsset<RoyalDecreeData>("Assets/Data/Decrees/Decree_MerchantDay.asset");
             decreeMerchant.decreeId = "decree_merchant_day";
             decreeMerchant.decreeName = "상인의 날";
             decreeMerchant.description = "오늘 하루 동안 던전 클리어 시 골드 획득량이 1.5배로 증가합니다.";
-            decreeMerchant.durationHours = 24;
+            decreeMerchant.effectsDescription = "골드 획득량 1.5배";
+            decreeMerchant.buffValues = new[] { 1.5f };
             EditorUtility.SetDirty(decreeMerchant);
 
             // 7. 유물(Relic) 데이터 생성
@@ -282,7 +282,7 @@ namespace MiniKingdom.Editor
             relicGlove.description = "공격력 +15% 증가";
             relicGlove.tier = RelicTier.Common;
             relicGlove.effects = new[] {
-                new StatModifier { statType = StatType.ATK, value = 0.15f, isPercentage = true }
+                new StatModifier { statType = MiniKingdom.Data.StatType.ATK, value = 0.15f, isPercentage = true }
             };
             EditorUtility.SetDirty(relicGlove);
 
@@ -292,7 +292,7 @@ namespace MiniKingdom.Editor
             relicGlass.description = "공격력 +100% 증가하지만 받는 피해량 +50%";
             relicGlass.tier = RelicTier.Epic;
             relicGlass.effects = new[] {
-                new StatModifier { statType = StatType.ATK, value = 1.0f, isPercentage = true }
+                new StatModifier { statType = MiniKingdom.Data.StatType.ATK, value = 1.0f, isPercentage = true }
             };
             EditorUtility.SetDirty(relicGlass);
 
@@ -540,6 +540,31 @@ namespace MiniKingdom.Editor
             resultGO.AddComponent<RunResultScreen>();
             resultGO.SetActive(false);
 
+            var branchGO = new GameObject("BranchSelectionScreen");
+            branchGO.transform.SetParent(canvasGO.transform, false);
+            branchGO.AddComponent<BranchSelectionScreen>();
+            branchGO.SetActive(false);
+
+            var restGO = new GameObject("RestRoomScreen");
+            restGO.transform.SetParent(canvasGO.transform, false);
+            restGO.AddComponent<RestRoomScreen>();
+            restGO.SetActive(false);
+
+            var shopGO = new GameObject("DungeonShopScreen");
+            shopGO.transform.SetParent(canvasGO.transform, false);
+            shopGO.AddComponent<DungeonShopScreen>();
+            shopGO.SetActive(false);
+
+            var fishingGO = new GameObject("FishingMinigameUI");
+            fishingGO.transform.SetParent(canvasGO.transform, false);
+            fishingGO.AddComponent<FishingMinigameUI>();
+            fishingGO.SetActive(false);
+
+            var relicGO = new GameObject("RelicPopupUI");
+            relicGO.transform.SetParent(canvasGO.transform, false);
+            relicGO.AddComponent<RelicPopupUI>();
+            relicGO.SetActive(false);
+
             EditorSceneManager.SaveScene(scene, scenePath);
             Debug.Log("✅ Dungeon 씬 생성 완료");
         }
@@ -556,6 +581,9 @@ namespace MiniKingdom.Editor
 
         private static T CreateOrLoadAsset<T>(string path) where T : ScriptableObject
         {
+            string dir = Path.GetDirectoryName(path).Replace("\\", "/");
+            EnsureFolderRecursive(dir);
+
             T asset = AssetDatabase.LoadAssetAtPath<T>(path);
             if (asset == null)
             {
@@ -563,6 +591,18 @@ namespace MiniKingdom.Editor
                 AssetDatabase.CreateAsset(asset, path);
             }
             return asset;
+        }
+
+        private static void EnsureFolderRecursive(string folderPath)
+        {
+            if (AssetDatabase.IsValidFolder(folderPath)) return;
+            string parent = Path.GetDirectoryName(folderPath).Replace("\\", "/");
+            if (!string.IsNullOrEmpty(parent) && !AssetDatabase.IsValidFolder(parent))
+            {
+                EnsureFolderRecursive(parent);
+            }
+            string folderName = Path.GetFileName(folderPath);
+            AssetDatabase.CreateFolder(parent, folderName);
         }
     }
 }

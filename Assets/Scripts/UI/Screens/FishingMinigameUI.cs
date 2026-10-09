@@ -2,8 +2,10 @@ using UnityEngine;
 using UnityEngine.UI;
 using TMPro;
 using MiniKingdom.Kingdom;
+using MiniKingdom.Data;
+using MiniKingdom.Core;
 
-namespace MiniKingdom.UI.Screens
+namespace MiniKingdom.UI
 {
     /// <summary>
     /// Fishing minigame UI overlay.
@@ -78,14 +80,26 @@ namespace MiniKingdom.UI.Screens
             if (_cursorPosition >= -halfZone && _cursorPosition <= halfZone)
             {
                 // 성공! (Success)
-                statusText.text = "Success!";
+                statusText.text = "낚시 대성공!";
                 statusText.color = Color.green;
                 PlaySuccessAnimation();
+
+                // 왕국 자원 추가 및 체력 25% 회복
+                if (ResourceManager.Instance != null)
+                {
+                    ResourceManager.Instance.AddResource(ResourceType.Food, 15);
+                }
+                var player = FindObjectOfType<Player.PlayerStats>();
+                if (player != null)
+                {
+                    float maxHp = player.CalculateFinalStat(MiniKingdom.Player.StatType.MaxHP);
+                    player.Heal(maxHp * 0.25f);
+                }
             }
             else
             {
                 // 실패... (Fail)
-                statusText.text = "Failed...";
+                statusText.text = "물고기를 놓쳤습니다...";
                 statusText.color = Color.red;
                 PlayFailAnimation();
             }

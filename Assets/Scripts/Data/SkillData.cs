@@ -59,6 +59,8 @@ namespace MiniKingdom.Data
         public bool isFusion;
 
         public string Id => skillId;
+        public string SkillName => skillName;
+        public float BaseCooldown => cooldown;
         public int MaxLevel => maxLevel;
         public bool IsFusion => isFusion;
         public int CurrentLevel { get; set; } = 1;

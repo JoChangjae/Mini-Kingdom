@@ -1,19 +1,13 @@
 using System;
 using System.Collections.Generic;
 using UnityEngine;
+using MiniKingdom.Core;
+using MiniKingdom.Data;
 using MiniKingdom.Utils;
 using Random = UnityEngine.Random;
 
 namespace MiniKingdom.Kingdom
 {
-    public enum WeatherType
-    {
-        Clear,
-        Rain,
-        Snow,
-        Fog
-    }
-
     [Serializable]
     public struct WeatherData
     {
@@ -22,12 +16,6 @@ namespace MiniKingdom.Kingdom
         public Sprite WeatherIcon;
         [Tooltip("Optional particle effect for the weather")]
         public GameObject WeatherEffectPrefab;
-    }
-
-    public struct WeatherChangedEvent
-    {
-        public WeatherData NewWeather;
-        public Sprite WeatherSprite => NewWeather.WeatherIcon;
     }
 
     /// <summary>
@@ -83,7 +71,7 @@ namespace MiniKingdom.Kingdom
         private void PublishWeatherEvent()
         {
             // 날씨 변경 이벤트 발행
-            EventBus.Publish(new WeatherChangedEvent { NewWeather = currentWeather });
+            EventBus.Publish(new WeatherChangedEvent(currentWeather.Type, currentWeather.WeatherIcon));
             Debug.Log($"[WeatherSystem] Weather changed to: {currentWeather.Type}");
         }
 

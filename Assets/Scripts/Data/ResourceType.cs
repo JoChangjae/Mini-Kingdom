@@ -15,6 +15,7 @@ namespace MiniKingdom.Data
         Gem,
         ManaStone,
         Herb,
+        Food,
         Crown // Premium currency
     }
 

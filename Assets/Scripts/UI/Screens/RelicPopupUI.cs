@@ -2,8 +2,10 @@ using UnityEngine;
 using UnityEngine.UI;
 using TMPro;
 using MiniKingdom.Kingdom;
+using MiniKingdom.Data;
+using MiniKingdom.Core;
 
-namespace MiniKingdom.UI.Screens
+namespace MiniKingdom.UI
 {
     /// <summary>
     /// Displays a popup when a relic is found in a dungeon chest.
@@ -35,6 +37,8 @@ namespace MiniKingdom.UI.Screens
             takeButton.onClick.RemoveListener(OnTakeClicked);
             skipButton.onClick.RemoveListener(OnSkipClicked);
         }
+
+        protected override void OnScreenUpdate() { }
 
         /// <summary>
         /// Call this before showing the screen to set up the relic details.

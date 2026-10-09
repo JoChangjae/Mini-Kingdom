@@ -1,0 +1,23 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 4ac35052b9f49294eace5c29f04e4387, type: 3}
+  m_Name: Decree_MerchantDay
+  m_EditorClassIdentifier: Assembly-CSharp::MiniKingdom.Data.RoyalDecreeData
+  decreeId: decree_merchant_day
+  decreeName: "\uC0C1\uC778\uC758 \uB0A0"
+  description: "\uC624\uB298 \uD558\uB8E8 \uB3D9\uC548 \uB358\uC804 \uD074\uB9AC\uC5B4 \uC2DC \uACE8\uB4DC \uD68D\uB4DD\uB7C9\uC774 1.5\uBC30\uB85C \uC99D\uAC00\uD569\uB2C8\uB2E4."
+  decreeType: 0
+  icon: {fileID: 0}
+  color: {r: 1, g: 1, b: 1, a: 1}
+  effectsDescription: "\uACE8\uB4DC \uD68D\uB4DD\uB7C9 1.5\uBC30"
+  buffValues:
+  - 1.5

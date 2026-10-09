@@ -108,7 +108,7 @@ namespace MiniKingdom.Combat
 
             if (selectedSkill.IsFusion)
             {
-                EventBus.Publish(new GameEvents.SkillFusionEvent { FusionData = null });
+                EventBus.Publish(new SkillFusionEvent { FusionData = null });
                 Debug.Log($"[LevelUpSystem] 융합 스킬 발동! {selectedSkill.skillName}");
             }
 
@@ -125,7 +125,7 @@ namespace MiniKingdom.Combat
                 });
             }
 
-            EventBus.Publish(new GameEvents.UpgradeChosenEvent { UpgradeData = selectedSkill.skillName });
+            EventBus.Publish(new UpgradeChosenEvent { UpgradeData = selectedSkill.skillName });
             Debug.Log($"[LevelUpSystem] 스킬 선택 완료: {selectedSkill.skillName} (Lv.{_playerSkillLevels[id]})");
         }
 

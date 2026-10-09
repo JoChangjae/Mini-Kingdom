@@ -2,6 +2,7 @@ using System.Collections.Generic;
 using UnityEngine;
 using MiniKingdom.Core;
 using MiniKingdom.Data;
+using MiniKingdom.Utils;
 
 namespace MiniKingdom.Kingdom
 {
@@ -17,7 +18,7 @@ namespace MiniKingdom.Kingdom
             if (_resources.ContainsKey(type)) _resources[type] += amount;
             else _resources[type] = amount;
             
-            EventBus.Publish(new GameEvents.ResourceChangedEvent(type, _resources[type]));
+            EventBus.Publish(new ResourceChangedEvent(type, _resources[type]));
         }
 
         public bool ConsumeResource(ResourceType type, int amount)
@@ -25,11 +26,13 @@ namespace MiniKingdom.Kingdom
             if (HasResource(type, amount))
             {
                 _resources[type] -= amount;
-                EventBus.Publish(new GameEvents.ResourceChangedEvent(type, _resources[type]));
+                EventBus.Publish(new ResourceChangedEvent(type, _resources[type]));
                 return true;
             }
             return false;
         }
+
+        public bool Spend(ResourceType type, int amount) => ConsumeResource(type, amount);
 
         public bool HasResource(ResourceType type, int amount)
         {
@@ -40,6 +43,8 @@ namespace MiniKingdom.Kingdom
         {
             return _resources.ContainsKey(type) ? _resources[type] : 0;
         }
+
+        public int GetAmount(ResourceType type) => GetResource(type);
 
         // 건물의 자원 생산 (시간 기반)
         public void ProcessProduction()

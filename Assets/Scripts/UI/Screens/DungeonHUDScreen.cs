@@ -43,9 +43,9 @@ namespace MiniKingdom.UI
             if (pauseButton != null) pauseButton.onClick.AddListener(OnPauseClicked);
             if (speedToggleBtn != null) speedToggleBtn.onClick.AddListener(OnSpeedToggleClicked);
 
-            EventBus.Subscribe<GameEvents.PerfectDodgeEvent>(OnPerfectDodgeEvent);
-            EventBus.Subscribe<GameEvents.PlayerDamagedEvent>(OnPlayerDamaged);
-            EventBus.Subscribe<GameEvents.PlayerHealedEvent>(OnPlayerHealed);
+            EventBus.Subscribe<PerfectDodgeEvent>(OnPerfectDodgeEvent);
+            EventBus.Subscribe<PlayerDamagedEvent>(OnPlayerDamaged);
+            EventBus.Subscribe<PlayerHealedEvent>(OnPlayerHealed);
 
             _playerStats = FindObjectOfType<PlayerStats>();
             if (_playerStats != null)
@@ -59,17 +59,17 @@ namespace MiniKingdom.UI
             if (pauseButton != null) pauseButton.onClick.RemoveAllListeners();
             if (speedToggleBtn != null) speedToggleBtn.onClick.RemoveAllListeners();
 
-            EventBus.Unsubscribe<GameEvents.PerfectDodgeEvent>(OnPerfectDodgeEvent);
-            EventBus.Unsubscribe<GameEvents.PlayerDamagedEvent>(OnPlayerDamaged);
-            EventBus.Unsubscribe<GameEvents.PlayerHealedEvent>(OnPlayerHealed);
+            EventBus.Unsubscribe<PerfectDodgeEvent>(OnPerfectDodgeEvent);
+            EventBus.Unsubscribe<PlayerDamagedEvent>(OnPlayerDamaged);
+            EventBus.Unsubscribe<PlayerHealedEvent>(OnPlayerHealed);
         }
 
-        private void OnPerfectDodgeEvent(GameEvents.PerfectDodgeEvent e)
+        private void OnPerfectDodgeEvent(PerfectDodgeEvent e)
         {
             TriggerPerfectDodge();
         }
 
-        private void OnPlayerDamaged(GameEvents.PlayerDamagedEvent e)
+        private void OnPlayerDamaged(PlayerDamagedEvent e)
         {
             if (_playerStats != null)
             {
@@ -77,7 +77,7 @@ namespace MiniKingdom.UI
             }
         }
 
-        private void OnPlayerHealed(GameEvents.PlayerHealedEvent e)
+        private void OnPlayerHealed(PlayerHealedEvent e)
         {
             if (_playerStats != null)
             {

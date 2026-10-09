@@ -52,7 +52,7 @@ namespace MiniKingdom.Items
             }
 
             // 유물 획득 이벤트 발행
-            EventBus.Publish(new GameEvents.RelicAcquiredEvent { RelicData = relicData });
+            EventBus.Publish(new RelicAcquiredEvent { RelicData = relicData });
             Debug.Log($"[RelicManager] 유물 획득: {relicData.relicName}");
         }
 

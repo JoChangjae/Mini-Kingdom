@@ -1,6 +1,7 @@
 using UnityEngine;
 using MiniKingdom.Data;
 using MiniKingdom.Core;
+using MiniKingdom.UI;
 
 namespace MiniKingdom.Enemy
 {
@@ -59,7 +60,7 @@ namespace MiniKingdom.Enemy
         {
             base.Die();
             string bossName = data != null ? data.enemyName : "Forest Boss";
-            EventBus.Publish(new GameEvents.BossKilledEvent(bossName));
+            EventBus.Publish(new BossKilledEvent(bossName));
             Debug.Log($"[BossController] 보스 {bossName} 처치 완료!");
         }
     }

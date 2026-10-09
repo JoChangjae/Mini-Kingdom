@@ -65,8 +65,9 @@ namespace MiniKingdom.Core
             LoadGame();
         }
 
-        private void OnApplicationQuit()
+        protected override void OnApplicationQuit()
         {
+            base.OnApplicationQuit();
             RecordLogout();
             SaveGame();
         }

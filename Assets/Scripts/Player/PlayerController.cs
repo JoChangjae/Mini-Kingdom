@@ -222,7 +222,7 @@ namespace MiniKingdom.Player
             Invoke(nameof(ResetTimeScale), perfectDodgeSlowDuration * perfectDodgeTimeScale); // Scaled duration
 
             // 시각 효과 (Golden Screen Flash) 처리 이벤트 발행
-            EventBus.Publish(new GameEvents.PerfectDodgeEvent());
+            EventBus.Publish(new PerfectDodgeEvent());
         }
 
         private void ResetTimeScale()

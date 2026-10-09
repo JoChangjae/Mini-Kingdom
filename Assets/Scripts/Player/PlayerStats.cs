@@ -113,7 +113,7 @@ namespace MiniKingdom.Player
 
             _currentHP -= actualDamage;
             OnDamaged?.Invoke(actualDamage);
-            EventBus.Publish(new GameEvents.PlayerDamagedEvent { Damage = actualDamage, RemainingHP = _currentHP });
+            EventBus.Publish(new PlayerDamagedEvent { Damage = actualDamage, RemainingHP = _currentHP });
 
             if (_currentHP <= 0)
             {
@@ -127,13 +127,13 @@ namespace MiniKingdom.Player
             float max = CalculateFinalStat(StatType.MaxHP);
             _currentHP = Mathf.Clamp(_currentHP + amount, 0, max);
             OnHealed?.Invoke(amount);
-            EventBus.Publish(new GameEvents.PlayerHealedEvent { Amount = amount, CurrentHP = _currentHP });
+            EventBus.Publish(new PlayerHealedEvent { Amount = amount, CurrentHP = _currentHP });
         }
 
         private void Die()
         {
             OnDied?.Invoke();
-            EventBus.Publish(new GameEvents.PlayerDiedEvent());
+            EventBus.Publish(new PlayerDiedEvent());
         }
 
         public float CurrentHP => _currentHP;

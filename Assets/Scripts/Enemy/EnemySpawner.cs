@@ -44,7 +44,7 @@ namespace MiniKingdom.Enemy
             }
 
             // Room Clear!
-            EventBus.Publish(new GameEvents.RoomClearedEvent());
+            EventBus.Publish(new RoomClearedEvent());
         }
 
         private void SpawnEnemy()
@@ -61,15 +61,15 @@ namespace MiniKingdom.Enemy
 
         private void OnEnable()
         {
-            EventBus.Subscribe<GameEvents.EnemyKilledEvent>(OnEnemyKilled);
+            EventBus.Subscribe<EnemyKilledEvent>(OnEnemyKilled);
         }
 
         private void OnDisable()
         {
-            EventBus.Unsubscribe<GameEvents.EnemyKilledEvent>(OnEnemyKilled);
+            EventBus.Unsubscribe<EnemyKilledEvent>(OnEnemyKilled);
         }
 
-        private void OnEnemyKilled(GameEvents.EnemyKilledEvent e)
+        private void OnEnemyKilled(EnemyKilledEvent e)
         {
             _aliveEnemies--;
             if (_aliveEnemies < 0) _aliveEnemies = 0;

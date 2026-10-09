@@ -1,9 +1,8 @@
 using UnityEngine;
+using MiniKingdom.Data;
 
 namespace MiniKingdom.Core
 {
-    // 리소스 타입
-    public enum ResourceType { Gold, Wood, Stone, Gem }
     // 시너지 타입
     public enum SynergyType { None, FireAttack, FastMovement }
     // 왕국 칙령 타입
@@ -18,13 +17,6 @@ namespace MiniKingdom.Core
         public ResourceChangedEvent(ResourceType type, int newAmount, int oldAmount = 0)
         {
             ResourceType = type;
-            NewAmount = newAmount;
-            OldAmount = oldAmount;
-        }
-
-        public ResourceChangedEvent(MiniKingdom.Data.ResourceType type, int newAmount, int oldAmount = 0)
-        {
-            ResourceType = (ResourceType)(int)type;
             NewAmount = newAmount;
             OldAmount = oldAmount;
         }
@@ -54,7 +46,11 @@ namespace MiniKingdom.Core
         public int RoomIndex;
     }
 
-    public struct RoomClearedEvent { }
+    public struct RoomClearedEvent
+    {
+        public int RoomIndex;
+        public RoomClearedEvent(int index = 0) { RoomIndex = index; }
+    }
 
     public struct PlayerDiedEvent { }
 
