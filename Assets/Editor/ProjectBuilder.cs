@@ -101,6 +101,16 @@ namespace MiniKingdom.Editor
             Debug.Log("🎉 미니왕국 기본 씬 및 프리팹 자동 생성이 완료되었습니다!");
         }
 
+        [MenuItem("Mini Kingdom/🏰 왕국 씬 다시 생성 (Fix Kingdom Scene)", false, 11)]
+        public static void RebuildKingdomScene()
+        {
+            SetupKoreanFont();
+            CreateKingdomScene();
+            AssetDatabase.SaveAssets();
+            AssetDatabase.Refresh();
+            Debug.Log("🎉 Kingdom 씬 재생성 완료 (Dungeon 출정 버튼 연결 완료)");
+        }
+
         [MenuItem("Mini Kingdom/🔤 3. 한글 폰트(TMP Font Asset) 자동 생성 및 등록", false, 3)]
         public static void SetupKoreanFont()
         {
@@ -412,6 +422,7 @@ namespace MiniKingdom.Editor
             root.AddComponent<WeatherSystem>();
             root.AddComponent<CombatSystem>();
             root.AddComponent<LevelUpSystem>();
+            root.AddComponent<UIManager>();
 
             PrefabUtility.SaveAsPrefabAsset(root, path);
             GameObject.DestroyImmediate(root);
@@ -535,7 +546,7 @@ namespace MiniKingdom.Editor
             GameObject titleGO = new GameObject("TitleText");
             titleGO.transform.SetParent(canvasGO.transform, false);
             var titleText = titleGO.AddComponent<TextMeshProUGUI>();
-            titleText.text = "👑 미니왕국 (Mini Kingdom)";
+            titleText.text = "미니왕국 (Mini Kingdom)";
             titleText.fontSize = 44;
             titleText.alignment = TextAlignmentOptions.Center;
             var titleRect = titleGO.GetComponent<RectTransform>();
@@ -570,7 +581,7 @@ namespace MiniKingdom.Editor
             GameObject btnTextGO = new GameObject("Text");
             btnTextGO.transform.SetParent(btnGO.transform, false);
             var btnText = btnTextGO.AddComponent<TextMeshProUGUI>();
-            btnText.text = "⚔️ 왕국 입장하기";
+            btnText.text = "왕국 입장하기";
             btnText.fontSize = 24;
             btnText.alignment = TextAlignmentOptions.Center;
 
@@ -616,7 +627,7 @@ namespace MiniKingdom.Editor
             GameObject titleGO = new GameObject("KingdomTitle");
             titleGO.transform.SetParent(canvasGO.transform, false);
             var titleText = titleGO.AddComponent<TextMeshProUGUI>();
-            titleText.text = "🏰 미니 왕국 중앙 광장";
+            titleText.text = "미니 왕국 중앙 광장";
             titleText.fontSize = 36;
             titleText.alignment = TextAlignmentOptions.Center;
             var titleRect = titleGO.GetComponent<RectTransform>();
@@ -636,9 +647,14 @@ namespace MiniKingdom.Editor
             GameObject dTextGO = new GameObject("Text");
             dTextGO.transform.SetParent(goDungeonBtnGO.transform, false);
             var dText = dTextGO.AddComponent<TextMeshProUGUI>();
-            dText.text = "⚔️ 던전 출정하기 (Dungeon)";
+            dText.text = "던전 출정하기 (Dungeon)";
             dText.fontSize = 22;
             dText.alignment = TextAlignmentOptions.Center;
+            dText.raycastTarget = false;
+
+            // Wire up persistent onClick listener with KingdomSceneController
+            var kingdomCtrl = goDungeonBtnGO.AddComponent<KingdomSceneController>();
+            UnityEditor.Events.UnityEventTools.AddPersistentListener(goDungeonBtn.onClick, kingdomCtrl.OnClickDepartDungeon);
 
             // Wire up explore tab button
             var fieldExplore = typeof(KingdomScreen).GetField("exploreTabBtn", System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Instance);

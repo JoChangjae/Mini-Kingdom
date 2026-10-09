@@ -23,6 +23,15 @@ namespace MiniKingdom.UI
             if (canvasGroup == null) canvasGroup = gameObject.AddComponent<CanvasGroup>();
         }
 
+        protected virtual void Start()
+        {
+            // Auto-initialize if screen is placed directly and active in scene
+            if (gameObject.activeInHierarchy && !isVisible)
+            {
+                Show();
+            }
+        }
+
         public ScreenType GetScreenType() => screenType;
 
         /// <summary>

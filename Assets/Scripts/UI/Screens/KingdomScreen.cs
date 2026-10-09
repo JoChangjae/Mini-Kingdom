@@ -1,5 +1,6 @@
 using UnityEngine;
 using UnityEngine.UI;
+using UnityEngine.SceneManagement;
 using TMPro;
 using MiniKingdom.Kingdom;
 using MiniKingdom.Core; // Assuming EventBus is here
@@ -39,16 +40,39 @@ namespace MiniKingdom.UI.Screens
         [SerializeField] private GameObject defenseCountdownPanel;
         [SerializeField] private TextMeshProUGUI defenseCountdownText;
 
+        private bool _isTransitioning = false;
+
         protected override void OnScreenShow()
         {
+            _isTransitioning = false;
             UpdateKingdomUI();
             
-            // Register listeners
-            if (exploreTabBtn != null) exploreTabBtn.onClick.AddListener(OnExploreClicked);
-            if (discoveryTabBtn != null) discoveryTabBtn.onClick.AddListener(OnDiscoveryClicked);
-            if (shopTabBtn != null) shopTabBtn.onClick.AddListener(OnShopClicked);
-            if (buildTabBtn != null) buildTabBtn.onClick.AddListener(OnBuildClicked);
-            if (treasuryButton != null) treasuryButton.onClick.AddListener(OnTreasuryClicked);
+            // Register listeners safely
+            if (exploreTabBtn != null)
+            {
+                exploreTabBtn.onClick.RemoveListener(OnExploreClicked);
+                exploreTabBtn.onClick.AddListener(OnExploreClicked);
+            }
+            if (discoveryTabBtn != null)
+            {
+                discoveryTabBtn.onClick.RemoveListener(OnDiscoveryClicked);
+                discoveryTabBtn.onClick.AddListener(OnDiscoveryClicked);
+            }
+            if (shopTabBtn != null)
+            {
+                shopTabBtn.onClick.RemoveListener(OnShopClicked);
+                shopTabBtn.onClick.AddListener(OnShopClicked);
+            }
+            if (buildTabBtn != null)
+            {
+                buildTabBtn.onClick.RemoveListener(OnBuildClicked);
+                buildTabBtn.onClick.AddListener(OnBuildClicked);
+            }
+            if (treasuryButton != null)
+            {
+                treasuryButton.onClick.RemoveListener(OnTreasuryClicked);
+                treasuryButton.onClick.AddListener(OnTreasuryClicked);
+            }
             
             // 날씨 이벤트 구독 (Subscribe to weather events)
             EventBus.Subscribe<WeatherChangedEvent>(OnWeatherChanged);
@@ -133,31 +157,47 @@ namespace MiniKingdom.UI.Screens
             }
         }
 
-        private void OnExploreClicked()
+        public void OnExploreClicked()
         {
-            UIManager.Instance.Show(ScreenType.DungeonSelect);
+            if (_isTransitioning) return;
+            _isTransitioning = true;
+
+            Debug.Log("[KingdomScreen] ⚔️ 던전 출정하기 클릭! Dungeon 씬으로 이동합니다.");
+            if (Application.CanStreamedLevelBeLoaded("Dungeon"))
+            {
+                SceneManager.LoadScene("Dungeon");
+            }
+            else if (UIManager.Instance != null)
+            {
+                UIManager.Instance.Show(ScreenType.DungeonSelect);
+            }
+            else
+            {
+                Debug.LogWarning("[KingdomScreen] Dungeon 씬을 로드할 수 없습니다.");
+                _isTransitioning = false;
+            }
         }
 
         private void OnDiscoveryClicked()
         {
-            UIManager.Instance.Show(ScreenType.DiscoveryBook);
+            UIManager.Instance?.Show(ScreenType.DiscoveryBook);
         }
 
         private void OnShopClicked()
         {
-            UIManager.Instance.Show(ScreenType.Shop);
+            UIManager.Instance?.Show(ScreenType.Shop);
         }
 
         private void OnBuildClicked()
         {
-            // UIManager.Instance.Show(ScreenType.BuildingList);
-            PopupManager.Instance.ShowToast("건설 메뉴 오픈!");
+            // UIManager.Instance?.Show(ScreenType.BuildingList);
+            PopupManager.Instance?.ShowToast("건설 메뉴 오픈!");
         }
 
         public void OnBuildingTapped(int buildingId)
         {
             // Show BuildingDetailScreen with buildingId
-            UIManager.Instance.Show(ScreenType.Building);
+            UIManager.Instance?.Show(ScreenType.Building);
         }
     }
 }
