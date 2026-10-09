@@ -20,23 +20,8 @@ using MiniKingdom.UI.Screens;
 
 namespace MiniKingdom.Editor
 {
-    [InitializeOnLoad]
     public class ProjectBuilder
     {
-        static ProjectBuilder()
-        {
-            EditorApplication.delayCall += AutoSetupFontOnLoad;
-        }
-
-        private static void AutoSetupFontOnLoad()
-        {
-            if (!File.Exists("Assets/Fonts/MalgunGothic SDF.asset"))
-            {
-                Debug.Log("[AutoSetup] 한글 폰트 미생성 감지 -> SetupKoreanFont 자동 실행");
-                SetupKoreanFont();
-            }
-        }
-
         [MenuItem("Mini Kingdom/🚀 1. 기본 씬 및 프리팹 자동 생성", false, 1)]
         public static void SetupProject()
         {
