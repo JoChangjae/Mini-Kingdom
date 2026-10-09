@@ -47,14 +47,29 @@ namespace MiniKingdom.Enemy
             EventBus.Publish(new RoomClearedEvent());
         }
 
+        [SerializeField] private GameObject defaultEnemyPrefab;
+        [SerializeField] private GameObject bossPrefab;
+
         private void SpawnEnemy()
         {
-            // 무작위 위치 (플레이어 주변 피해서)
-            Vector2 spawnPos = (Vector2)transform.position + Random.insideUnitCircle * 5f;
-            
-            // 데이터에서 적 프리팹 가져오기
-            // var prefab = _dungeonData.GetRandomEnemy();
-            // var go = Instantiate(prefab, spawnPos, Quaternion.identity);
+            Vector2 spawnPos = (Vector2)transform.position + Random.insideUnitCircle.normalized * Random.Range(3f, 6f);
+
+            GameObject prefabToSpawn = defaultEnemyPrefab;
+            if (prefabToSpawn == null)
+            {
+                prefabToSpawn = Resources.Load<GameObject>("Prefabs/Entities/Enemy_Slime");
+                if (prefabToSpawn == null)
+                {
+#if UNITY_EDITOR
+                    prefabToSpawn = UnityEditor.AssetDatabase.LoadAssetAtPath<GameObject>("Assets/Prefabs/Entities/Enemy_Slime.prefab");
+#endif
+                }
+            }
+
+            if (prefabToSpawn != null)
+            {
+                Instantiate(prefabToSpawn, spawnPos, Quaternion.identity);
+            }
             
             _aliveEnemies++;
         }

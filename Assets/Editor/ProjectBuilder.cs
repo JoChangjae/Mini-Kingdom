@@ -413,8 +413,6 @@ namespace MiniKingdom.Editor
         private static void CreateMainMenuScene()
         {
             string scenePath = "Assets/Scenes/MainMenu.unity";
-            if (File.Exists(scenePath)) return;
-
             Scene scene = EditorSceneManager.NewScene(NewSceneSetup.EmptyScene, NewSceneMode.Single);
             scene.name = "MainMenu";
 
@@ -423,43 +421,67 @@ namespace MiniKingdom.Editor
             var cam = camGO.AddComponent<Camera>();
             cam.orthographic = true;
             cam.orthographicSize = 5f;
+            cam.backgroundColor = new Color(0.12f, 0.14f, 0.2f);
+            cam.clearFlags = CameraClearFlags.SolidColor;
             camGO.AddComponent<AudioListener>();
             camGO.tag = "MainCamera";
 
-            // Canvas
+            // Canvas & EventSystem
             GameObject canvasGO = new GameObject("Canvas");
             var canvas = canvasGO.AddComponent<Canvas>();
             canvas.renderMode = RenderMode.ScreenSpaceOverlay;
             canvasGO.AddComponent<CanvasScaler>();
             canvasGO.AddComponent<GraphicRaycaster>();
 
+            GameObject esGO = new GameObject("EventSystem");
+            esGO.AddComponent<UnityEngine.EventSystems.EventSystem>();
+            esGO.AddComponent<UnityEngine.EventSystems.StandaloneInputModule>();
+
             // Title
             GameObject titleGO = new GameObject("TitleText");
             titleGO.transform.SetParent(canvasGO.transform, false);
             var titleText = titleGO.AddComponent<TextMeshProUGUI>();
             titleText.text = "👑 미니왕국 (Mini Kingdom)";
-            titleText.fontSize = 40;
+            titleText.fontSize = 44;
             titleText.alignment = TextAlignmentOptions.Center;
             var titleRect = titleGO.GetComponent<RectTransform>();
             titleRect.anchoredPosition = new Vector2(0, 100);
-            titleRect.sizeDelta = new Vector2(500, 100);
+            titleRect.sizeDelta = new Vector2(600, 100);
+
+            // Subtitle
+            GameObject subGO = new GameObject("SubText");
+            subGO.transform.SetParent(canvasGO.transform, false);
+            var subText = subGO.AddComponent<TextMeshProUGUI>();
+            subText.text = "왕국의 부흥을 위해 칼을 든 국왕의 모험!";
+            subText.fontSize = 20;
+            subText.color = new Color(0.8f, 0.8f, 0.8f);
+            subText.alignment = TextAlignmentOptions.Center;
+            var subRect = subGO.GetComponent<RectTransform>();
+            subRect.anchoredPosition = new Vector2(0, 30);
+            subRect.sizeDelta = new Vector2(500, 50);
 
             // Start Button
             GameObject btnGO = new GameObject("StartButton");
             btnGO.transform.SetParent(canvasGO.transform, false);
             var btnImage = btnGO.AddComponent<Image>();
-            btnImage.color = new Color(0.3f, 0.7f, 0.4f);
+            btnImage.color = new Color(0.2f, 0.65f, 0.35f);
             var btn = btnGO.AddComponent<Button>();
+            var menuCtrl = btnGO.AddComponent<MainMenuController>();
+            UnityEditor.Events.UnityEventTools.AddPersistentListener(btn.onClick, menuCtrl.OnClickStart);
+
             var btnRect = btnGO.GetComponent<RectTransform>();
-            btnRect.anchoredPosition = new Vector2(0, -50);
-            btnRect.sizeDelta = new Vector2(240, 60);
+            btnRect.anchoredPosition = new Vector2(0, -70);
+            btnRect.sizeDelta = new Vector2(260, 65);
 
             GameObject btnTextGO = new GameObject("Text");
             btnTextGO.transform.SetParent(btnGO.transform, false);
             var btnText = btnTextGO.AddComponent<TextMeshProUGUI>();
-            btnText.text = "게임 시작";
-            btnText.fontSize = 28;
+            btnText.text = "⚔️ 왕국 입장하기";
+            btnText.fontSize = 24;
             btnText.alignment = TextAlignmentOptions.Center;
+
+            // Instantiate Core Manager
+            InstantiateGameCoreInScene();
 
             EditorSceneManager.SaveScene(scene, scenePath);
             Debug.Log("✅ MainMenu 씬 생성 완료");
@@ -468,8 +490,6 @@ namespace MiniKingdom.Editor
         private static void CreateKingdomScene()
         {
             string scenePath = "Assets/Scenes/Kingdom.unity";
-            if (File.Exists(scenePath)) return;
-
             Scene scene = EditorSceneManager.NewScene(NewSceneSetup.EmptyScene, NewSceneMode.Single);
             scene.name = "Kingdom";
 
@@ -477,20 +497,60 @@ namespace MiniKingdom.Editor
             GameObject camGO = new GameObject("Main Camera");
             var cam = camGO.AddComponent<Camera>();
             cam.orthographic = true;
-            cam.orthographicSize = 5f;
+            cam.orthographicSize = 6f;
+            cam.backgroundColor = new Color(0.18f, 0.25f, 0.2f);
+            cam.clearFlags = CameraClearFlags.SolidColor;
             camGO.AddComponent<AudioListener>();
             camGO.tag = "MainCamera";
 
-            // Canvas & Kingdom Screen
+            // Canvas & EventSystem
             GameObject canvasGO = new GameObject("Canvas");
             var canvas = canvasGO.AddComponent<Canvas>();
             canvas.renderMode = RenderMode.ScreenSpaceOverlay;
             canvasGO.AddComponent<CanvasScaler>();
             canvasGO.AddComponent<GraphicRaycaster>();
 
+            GameObject esGO = new GameObject("EventSystem");
+            esGO.AddComponent<UnityEngine.EventSystems.EventSystem>();
+            esGO.AddComponent<UnityEngine.EventSystems.StandaloneInputModule>();
+
             var kingdomScreenGO = new GameObject("KingdomScreen");
             kingdomScreenGO.transform.SetParent(canvasGO.transform, false);
-            kingdomScreenGO.AddComponent<KingdomScreen>();
+            var kingdomScreen = kingdomScreenGO.AddComponent<KingdomScreen>();
+
+            // Title
+            GameObject titleGO = new GameObject("KingdomTitle");
+            titleGO.transform.SetParent(canvasGO.transform, false);
+            var titleText = titleGO.AddComponent<TextMeshProUGUI>();
+            titleText.text = "🏰 미니 왕국 중앙 광장";
+            titleText.fontSize = 36;
+            titleText.alignment = TextAlignmentOptions.Center;
+            var titleRect = titleGO.GetComponent<RectTransform>();
+            titleRect.anchoredPosition = new Vector2(0, 180);
+            titleRect.sizeDelta = new Vector2(500, 60);
+
+            // Explore / Dungeon Go Button
+            GameObject goDungeonBtnGO = new GameObject("ExploreButton");
+            goDungeonBtnGO.transform.SetParent(canvasGO.transform, false);
+            var goDungeonImg = goDungeonBtnGO.AddComponent<Image>();
+            goDungeonImg.color = new Color(0.85f, 0.3f, 0.25f);
+            var goDungeonBtn = goDungeonBtnGO.AddComponent<Button>();
+            var goDungeonRect = goDungeonBtnGO.GetComponent<RectTransform>();
+            goDungeonRect.anchoredPosition = new Vector2(0, -60);
+            goDungeonRect.sizeDelta = new Vector2(300, 75);
+
+            GameObject dTextGO = new GameObject("Text");
+            dTextGO.transform.SetParent(goDungeonBtnGO.transform, false);
+            var dText = dTextGO.AddComponent<TextMeshProUGUI>();
+            dText.text = "⚔️ 던전 출정하기 (Dungeon)";
+            dText.fontSize = 22;
+            dText.alignment = TextAlignmentOptions.Center;
+
+            // Wire up explore tab button
+            var fieldExplore = typeof(KingdomScreen).GetField("exploreTabBtn", System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Instance);
+            if (fieldExplore != null) fieldExplore.SetValue(kingdomScreen, goDungeonBtn);
+
+            InstantiateGameCoreInScene();
 
             EditorSceneManager.SaveScene(scene, scenePath);
             Debug.Log("✅ Kingdom 씬 생성 완료");
@@ -499,8 +559,6 @@ namespace MiniKingdom.Editor
         private static void CreateDungeonScene()
         {
             string scenePath = "Assets/Scenes/Dungeon.unity";
-            if (File.Exists(scenePath)) return;
-
             Scene scene = EditorSceneManager.NewScene(NewSceneSetup.EmptyScene, NewSceneMode.Single);
             scene.name = "Dungeon";
 
@@ -509,15 +567,30 @@ namespace MiniKingdom.Editor
             var cam = camGO.AddComponent<Camera>();
             cam.orthographic = true;
             cam.orthographicSize = 6f;
+            cam.backgroundColor = new Color(0.08f, 0.08f, 0.12f);
+            cam.clearFlags = CameraClearFlags.SolidColor;
             camGO.AddComponent<AudioListener>();
             camGO.tag = "MainCamera";
+
+            // EventSystem
+            GameObject esGO = new GameObject("EventSystem");
+            esGO.AddComponent<UnityEngine.EventSystems.EventSystem>();
+            esGO.AddComponent<UnityEngine.EventSystems.StandaloneInputModule>();
 
             // Dungeon Systems Root
             GameObject dungeonSys = new GameObject("DungeonRunSystem");
             dungeonSys.AddComponent<DungeonGenerator>();
             dungeonSys.AddComponent<DungeonRunManager>();
             dungeonSys.AddComponent<RoomManager>();
-            dungeonSys.AddComponent<EnemySpawner>();
+            var spawner = dungeonSys.AddComponent<EnemySpawner>();
+
+            // Wire default enemy prefabs into spawner
+            var enemySlimePrefab = AssetDatabase.LoadAssetAtPath<GameObject>("Assets/Prefabs/Entities/Enemy_Slime.prefab");
+            var bossTrollPrefab = AssetDatabase.LoadAssetAtPath<GameObject>("Assets/Prefabs/Entities/Boss_Troll.prefab");
+            var fieldDefEnemy = typeof(EnemySpawner).GetField("defaultEnemyPrefab", System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Instance);
+            if (fieldDefEnemy != null && enemySlimePrefab != null) fieldDefEnemy.SetValue(spawner, enemySlimePrefab);
+            var fieldBoss = typeof(EnemySpawner).GetField("bossPrefab", System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Instance);
+            if (fieldBoss != null && bossTrollPrefab != null) fieldBoss.SetValue(spawner, bossTrollPrefab);
 
             // Canvas & HUD
             GameObject canvasGO = new GameObject("DungeonCanvas");
@@ -565,8 +638,27 @@ namespace MiniKingdom.Editor
             relicGO.AddComponent<RelicPopupUI>();
             relicGO.SetActive(false);
 
+            // Place Player in scene
+            var playerPrefab = AssetDatabase.LoadAssetAtPath<GameObject>("Assets/Prefabs/Entities/Player.prefab");
+            if (playerPrefab != null)
+            {
+                var p = (GameObject)PrefabUtility.InstantiatePrefab(playerPrefab);
+                p.transform.position = Vector3.zero;
+            }
+
+            InstantiateGameCoreInScene();
+
             EditorSceneManager.SaveScene(scene, scenePath);
             Debug.Log("✅ Dungeon 씬 생성 완료");
+        }
+
+        private static void InstantiateGameCoreInScene()
+        {
+            var corePrefab = AssetDatabase.LoadAssetAtPath<GameObject>("Assets/Prefabs/Core/GameCore.prefab");
+            if (corePrefab != null)
+            {
+                PrefabUtility.InstantiatePrefab(corePrefab);
+            }
         }
 
         private static void EnsureFolder(string path)

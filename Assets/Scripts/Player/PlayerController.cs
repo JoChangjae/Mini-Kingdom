@@ -116,11 +116,11 @@ namespace MiniKingdom.Player
             {
                 _isDodging = false;
                 _isInvincible = false;
-                _rb.velocity = Vector2.zero;
+                _rb.linearVelocity = Vector2.zero;
             }
             else
             {
-                _rb.velocity = _dodgeDirection * dodgeSpeed;
+                _rb.linearVelocity = _dodgeDirection * dodgeSpeed;
             }
         }
 
@@ -135,16 +135,22 @@ namespace MiniKingdom.Player
                 {
                     Vector2 dir = (_targetEnemy.position - transform.position).normalized;
                     float currentMoveSpeed = _stats != null ? _stats.CalculateFinalStat(StatType.MOV) : moveSpeed;
-                    _rb.velocity = dir * currentMoveSpeed;
+                    _rb.linearVelocity = dir * currentMoveSpeed;
                 }
                 else
                 {
-                    _rb.velocity = Vector2.zero;
+                    _rb.linearVelocity = Vector2.zero;
                 }
             }
             else
             {
-                _rb.velocity = Vector2.zero;
+                // 적이 없거나 수동 조작 시 WASD / 방향키 이동 지원
+                float h = Input.GetAxisRaw("Horizontal");
+                float v = Input.GetAxisRaw("Vertical");
+                Vector2 manualDir = new Vector2(h, v).normalized;
+
+                float currentMoveSpeed = _stats != null ? _stats.CalculateFinalStat(StatType.MOV) : moveSpeed;
+                _rb.linearVelocity = manualDir * currentMoveSpeed;
             }
         }
 

@@ -44,11 +44,11 @@ namespace MiniKingdom.UI.Screens
             UpdateKingdomUI();
             
             // Register listeners
-            exploreTabBtn.onClick.AddListener(OnExploreClicked);
-            discoveryTabBtn.onClick.AddListener(OnDiscoveryClicked);
-            shopTabBtn.onClick.AddListener(OnShopClicked);
-            buildTabBtn.onClick.AddListener(OnBuildClicked);
-            treasuryButton.onClick.AddListener(OnTreasuryClicked);
+            if (exploreTabBtn != null) exploreTabBtn.onClick.AddListener(OnExploreClicked);
+            if (discoveryTabBtn != null) discoveryTabBtn.onClick.AddListener(OnDiscoveryClicked);
+            if (shopTabBtn != null) shopTabBtn.onClick.AddListener(OnShopClicked);
+            if (buildTabBtn != null) buildTabBtn.onClick.AddListener(OnBuildClicked);
+            if (treasuryButton != null) treasuryButton.onClick.AddListener(OnTreasuryClicked);
             
             // 날씨 이벤트 구독 (Subscribe to weather events)
             EventBus.Subscribe<WeatherChangedEvent>(OnWeatherChanged);
@@ -60,11 +60,11 @@ namespace MiniKingdom.UI.Screens
 
         protected override void OnScreenHide()
         {
-            exploreTabBtn.onClick.RemoveAllListeners();
-            discoveryTabBtn.onClick.RemoveAllListeners();
-            shopTabBtn.onClick.RemoveAllListeners();
-            buildTabBtn.onClick.RemoveAllListeners();
-            treasuryButton.onClick.RemoveAllListeners();
+            if (exploreTabBtn != null) exploreTabBtn.onClick.RemoveAllListeners();
+            if (discoveryTabBtn != null) discoveryTabBtn.onClick.RemoveAllListeners();
+            if (shopTabBtn != null) shopTabBtn.onClick.RemoveAllListeners();
+            if (buildTabBtn != null) buildTabBtn.onClick.RemoveAllListeners();
+            if (treasuryButton != null) treasuryButton.onClick.RemoveAllListeners();
             
             EventBus.Unsubscribe<WeatherChangedEvent>(OnWeatherChanged);
         }
