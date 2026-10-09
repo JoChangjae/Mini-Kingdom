@@ -6,6 +6,8 @@ using UnityEngine.SceneManagement;
 using System.IO;
 using System.Collections.Generic;
 using TMPro;
+using UnityEngine.TextCore;
+using UnityEngine.TextCore.LowLevel;
 using MiniKingdom.Core;
 using MiniKingdom.Combat;
 using MiniKingdom.Kingdom;
@@ -136,15 +138,65 @@ namespace MiniKingdom.Editor
             }
 
             var fontAsset = AssetDatabase.LoadAssetAtPath<TMP_FontAsset>(assetPath);
-            if (fontAsset == null)
+            if (fontAsset == null || fontAsset.material == null || fontAsset.atlasTextures == null || fontAsset.atlasTextures.Length == 0 || fontAsset.atlasTextures[0] == null)
             {
-                fontAsset = TMP_FontAsset.CreateFontAsset(font, 36, 4, UnityEngine.TextCore.LowLevel.GlyphRenderMode.SDFAA, 512, 512, AtlasPopulationMode.Dynamic);
-                AssetDatabase.CreateAsset(fontAsset, assetPath);
-                AssetDatabase.SaveAssets();
-                Debug.Log("✅ Dynamic MalgunGothic SDF 폰트 에셋 생성 완료!");
+                if (File.Exists(assetPath))
+                {
+                    AssetDatabase.DeleteAsset(assetPath);
+                }
+
+                FontEngine.InitializeFontEngine();
+                if (FontEngine.LoadFontFace(font, 90, 0, out FontFaceHandle faceHandle) == FontEngineError.Success)
+                {
+                    fontAsset = ScriptableObject.CreateInstance<TMP_FontAsset>();
+                    AssetDatabase.CreateAsset(fontAsset, assetPath);
+
+                    fontAsset.version = "1.1.0";
+                    fontAsset.faceInfo = FontEngine.GetFaceInfo(faceHandle);
+                    fontAsset.sourceFontFile = font;
+                    fontAsset.m_SourceFontFileGUID = AssetDatabase.AssetPathToGUID(fontPath);
+                    fontAsset.m_SourceFontFile_EditorRef = font;
+                    fontAsset.atlasPopulationMode = AtlasPopulationMode.Dynamic;
+                    fontAsset.clearDynamicDataOnBuild = true;
+
+                    fontAsset.atlasTextures = new Texture2D[1];
+                    int atlasWidth = fontAsset.atlasWidth = 1024;
+                    int atlasHeight = fontAsset.atlasHeight = 1024;
+                    int atlasPadding = fontAsset.atlasPadding = 9;
+
+                    Texture2D texture = new Texture2D(1, 1, TextureFormat.Alpha8, false);
+                    texture.name = "MalgunGothic Atlas";
+                    Shader shader = Shader.Find("TextMeshPro/Distance Field");
+                    Material mat = new Material(shader);
+                    mat.name = "MalgunGothic Material";
+
+                    int packingModifier = 1;
+                    mat.SetFloat(ShaderUtilities.ID_GradientScale, atlasPadding + packingModifier);
+                    mat.SetFloat(ShaderUtilities.ID_WeightNormal, fontAsset.normalStyle);
+                    mat.SetFloat(ShaderUtilities.ID_WeightBold, fontAsset.boldStyle);
+
+                    fontAsset.atlasTextures[0] = texture;
+                    AssetDatabase.AddObjectToAsset(texture, fontAsset);
+
+                    fontAsset.freeGlyphRects = new List<GlyphRect>() { new GlyphRect(0, 0, atlasWidth - packingModifier, atlasHeight - packingModifier) };
+                    fontAsset.usedGlyphRects = new List<GlyphRect>();
+
+                    mat.SetTexture(ShaderUtilities.ID_MainTex, texture);
+                    mat.SetFloat(ShaderUtilities.ID_TextureWidth, atlasWidth);
+                    mat.SetFloat(ShaderUtilities.ID_TextureHeight, atlasHeight);
+
+                    fontAsset.material = mat;
+                    AssetDatabase.AddObjectToAsset(mat, fontAsset);
+
+                    fontAsset.creationSettings = new FontAssetCreationSettings(fontAsset.m_SourceFontFileGUID, (int)fontAsset.faceInfo.pointSize, 0, atlasPadding, 0, 1024, 1024, 7, string.Empty, (int)GlyphRenderMode.SDFAA);
+
+                    EditorUtility.SetDirty(fontAsset);
+                    AssetDatabase.SaveAssets();
+                    Debug.Log("✅ Dynamic MalgunGothic SDF 폰트 에셋 (Texture/Material 서브에셋 정상 포함) 생성 완료!");
+                }
             }
 
-            // TMP Settings에 Fallback 폰트로 등록
+            // TMP Settings에 Fallback 폰트로 등록 (Default Font는 변경하지 않고 유지)
             var tmpSettings = Resources.Load<TMP_Settings>("TMP Settings");
             if (tmpSettings != null && fontAsset != null)
             {
@@ -158,29 +210,10 @@ namespace MiniKingdom.Editor
                         list.Add(fontAsset);
                         fallbackField.SetValue(tmpSettings, list);
                         EditorUtility.SetDirty(tmpSettings);
+                        AssetDatabase.SaveAssets();
                     }
                 }
-
-                // Default Font로도 지정
-                var defaultField = typeof(TMP_Settings).GetField("m_defaultFontAsset", System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Instance);
-                if (defaultField != null)
-                {
-                    defaultField.SetValue(tmpSettings, fontAsset);
-                    EditorUtility.SetDirty(tmpSettings);
-                }
-
-                AssetDatabase.SaveAssets();
-                Debug.Log("✅ TMP Settings에 MalgunGothic SDF 기본 및 Fallback 폰트로 등록 완료!");
-            }
-
-            // 현재 씬의 모든 TextMeshProUGUI 컴포넌트 폰트 즉시 갱신
-            if (fontAsset != null)
-            {
-                foreach (var tmp in Object.FindObjectsByType<TextMeshProUGUI>(FindObjectsInactive.Include, FindObjectsSortMode.None))
-                {
-                    tmp.font = fontAsset;
-                    EditorUtility.SetDirty(tmp);
-                }
+                Debug.Log("✅ TMP Settings에 MalgunGothic SDF Fallback 폰트로 등록 완료!");
             }
         }
 
