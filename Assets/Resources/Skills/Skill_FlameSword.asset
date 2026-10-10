@@ -1,0 +1,37 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 3434688fcd63bae47843deab69509573, type: 3}
+  m_Name: Skill_FlameSword
+  m_EditorClassIdentifier: Assembly-CSharp::MiniKingdom.Data.SkillData
+  skillId: skill_flame_sword
+  skillName: "\uD654\uC5FC\uAC80"
+  description: "\uAC80\uC5D0 \uD654\uC5FC\uC744 \uB458\uB7EC \uACF5\uACA9\uB825 +20% \uC99D\uAC00 \uBC0F \uB9C8\uBC95 \uD654\uC5FC \uD53C\uD574 \uBD80\uC5EC."
+  skillType: 0
+  damageType: 1
+  targeting: 0
+  cooldown: 4
+  damageMultiplier: 1.5
+  effectDuration: 0
+  range: 0
+  knockback: 0
+  slow: 0
+  stun: 0
+  poison: 0
+  burn: 0
+  freeze: 0
+  vfxPrefab: {fileID: 0}
+  sfxClip: {fileID: 0}
+  icon: {fileID: 0}
+  maxLevel: 5
+  isFusion: 0
+  unlockBuildingId: 
+  unlockBuildingLevel: 0

@@ -64,8 +64,8 @@ namespace MiniKingdom.UI
             
             while (elapsed < transitionDuration)
             {
-                elapsed += Time.deltaTime;
-                float t = elapsed / transitionDuration;
+                elapsed += Time.unscaledDeltaTime;
+                float t = Mathf.Clamp01(elapsed / transitionDuration);
                 canvasGroup.alpha = Mathf.Lerp(0f, 1f, t);
                 transform.localScale = Vector3.Lerp(Vector3.one * 0.9f, Vector3.one, t);
                 yield return null;
@@ -85,8 +85,8 @@ namespace MiniKingdom.UI
             
             while (elapsed < transitionDuration)
             {
-                elapsed += Time.deltaTime;
-                float t = elapsed / transitionDuration;
+                elapsed += Time.unscaledDeltaTime;
+                float t = Mathf.Clamp01(elapsed / transitionDuration);
                 canvasGroup.alpha = Mathf.Lerp(1f, 0f, t);
                 yield return null;
             }

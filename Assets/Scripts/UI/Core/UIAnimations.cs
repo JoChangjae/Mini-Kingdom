@@ -25,10 +25,10 @@ namespace MiniKingdom.UI
             float elapsed = 0f;
             while (elapsed < duration)
             {
-                elapsed += Time.deltaTime;
+                elapsed += Time.unscaledDeltaTime;
                 if (cg != null)
                 {
-                    cg.alpha = Mathf.Lerp(start, end, elapsed / duration);
+                    cg.alpha = Mathf.Lerp(start, end, Mathf.Clamp01(elapsed / duration));
                 }
                 yield return null;
             }
@@ -49,18 +49,18 @@ namespace MiniKingdom.UI
             float elapsed = 0f;
             while (elapsed < halfDuration)
             {
-                elapsed += Time.deltaTime;
+                elapsed += Time.unscaledDeltaTime;
                 if (t != null)
-                    t.localScale = Vector3.Lerp(originalScale, originalScale * maxScale, elapsed / halfDuration);
+                    t.localScale = Vector3.Lerp(originalScale, originalScale * maxScale, Mathf.Clamp01(elapsed / halfDuration));
                 yield return null;
             }
 
             elapsed = 0f;
             while (elapsed < halfDuration)
             {
-                elapsed += Time.deltaTime;
+                elapsed += Time.unscaledDeltaTime;
                 if (t != null)
-                    t.localScale = Vector3.Lerp(originalScale * maxScale, originalScale, elapsed / halfDuration);
+                    t.localScale = Vector3.Lerp(originalScale * maxScale, originalScale, Mathf.Clamp01(elapsed / halfDuration));
                 yield return null;
             }
             

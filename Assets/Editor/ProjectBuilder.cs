@@ -915,6 +915,7 @@ namespace MiniKingdom.Editor
 
             // Camera
             GameObject camGO = new GameObject("Main Camera");
+            camGO.transform.position = new Vector3(0, 0, -10f);
             var cam = camGO.AddComponent<Camera>();
             cam.orthographic = true;
             cam.orthographicSize = 5f;
@@ -992,6 +993,7 @@ namespace MiniKingdom.Editor
 
             // Camera
             GameObject camGO = new GameObject("Main Camera");
+            camGO.transform.position = new Vector3(0, 0, -10f);
             var cam = camGO.AddComponent<Camera>();
             cam.orthographic = true;
             cam.orthographicSize = 6f;
@@ -1312,6 +1314,7 @@ namespace MiniKingdom.Editor
 
             // Camera
             GameObject camGO = new GameObject("Main Camera");
+            camGO.transform.position = new Vector3(0, 0, -10f);
             var cam = camGO.AddComponent<Camera>();
             cam.orthographic = true;
             cam.orthographicSize = 6f;

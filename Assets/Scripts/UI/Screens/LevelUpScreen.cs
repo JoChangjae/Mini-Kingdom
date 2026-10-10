@@ -79,10 +79,10 @@ namespace MiniKingdom.UI
                     card = new GameObject($"Card_{i}");
                     card.transform.SetParent(cardContainer, false);
                     var img = card.AddComponent<Image>();
-                    img.color = new Color(0.12f, 0.14f, 0.22f, 0.95f);
+                    img.color = new Color(0.12f, 0.16f, 0.28f, 0.98f);
                     
                     var rect = card.GetComponent<RectTransform>();
-                    rect.sizeDelta = new Vector2(200, 260);
+                    rect.sizeDelta = new Vector2(210, 270);
 
                     // Text child
                     var textObj = new GameObject("Text");
@@ -90,14 +90,15 @@ namespace MiniKingdom.UI
                     var tRect = textObj.AddComponent<RectTransform>();
                     tRect.anchorMin = Vector2.zero;
                     tRect.anchorMax = Vector2.one;
-                    tRect.offsetMin = new Vector2(10, 10);
-                    tRect.offsetMax = new Vector2(-10, -10);
+                    tRect.offsetMin = new Vector2(12, 12);
+                    tRect.offsetMax = new Vector2(-12, -12);
 
                     var tmp = textObj.AddComponent<TextMeshProUGUI>();
                     tmp.fontSize = 18;
                     tmp.alignment = TextAlignmentOptions.Center;
                     tmp.color = Color.white;
                     tmp.textWrappingMode = TextWrappingModes.Normal;
+                    tmp.raycastTarget = false;
                 }
 
                 if (card != null)
@@ -108,11 +109,18 @@ namespace MiniKingdom.UI
 
                     // 카드 텍스트 설정
                     var textMesh = card.GetComponentInChildren<TextMeshProUGUI>();
-                    if (textMesh != null && choices != null && i < choices.Count && choices[i] != null)
+                    if (textMesh != null)
                     {
-                        var skill = choices[i];
-                        string title = skill.IsFusion ? $"[융합] {skill.skillName}" : skill.skillName;
-                        textMesh.text = $"<b><size=20><color=#FFD700>{title}</color></size></b>\n\n<size=15>{skill.description}</size>\n\n<color=#00FFAA>[Lv.{skill.CurrentLevel}]</color>";
+                        if (choices != null && i < choices.Count && choices[i] != null)
+                        {
+                            var skill = choices[i];
+                            string title = skill.IsFusion ? $"[융합] {skill.skillName}" : skill.skillName;
+                            textMesh.text = $"<b><size=20><color=#FFD700>{title}</color></size></b>\n\n<size=15>{skill.description}</size>\n\n<color=#00FFAA>[Lv.{skill.CurrentLevel}]</color>";
+                        }
+                        else
+                        {
+                            textMesh.text = $"<b><size=20><color=#FFD700>스킬 강화 {i + 1}</color></size></b>\n\n<size=15>공격력과 능력이 상승합니다.</size>\n\n<color=#00FFAA>[Lv.1]</color>";
+                        }
                     }
                 }
             }
