@@ -46,7 +46,7 @@ namespace MiniKingdom.Dungeon
                         var spawner = GetComponent<Enemy.EnemySpawner>();
                         if (spawner != null)
                         {
-                            spawner.StartSpawning(null, _currentConfig.Difficulty);
+                            spawner.StartSpawning(null, _currentConfig.Difficulty, _currentConfig.Type);
                         }
                         else
                         {

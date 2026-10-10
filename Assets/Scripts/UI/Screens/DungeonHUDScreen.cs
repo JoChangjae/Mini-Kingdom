@@ -20,6 +20,7 @@ namespace MiniKingdom.UI
         [Header("Boss/Combo")]
         [SerializeField] private GameObject bossHpPanel;
         [SerializeField] private Slider bossHpBar;
+        [SerializeField] private TextMeshProUGUI bossNameText;
         [SerializeField] private GameObject comboPanel;
         [SerializeField] private TextMeshProUGUI comboText;
 
@@ -98,6 +99,26 @@ namespace MiniKingdom.UI
         {
             if (hpBar != null && max > 0) hpBar.value = (float)current / max;
             if (hpText != null) hpText.text = $"{current}/{max}";
+        }
+
+        public void ShowBossHP(string bossName, float current, float max)
+        {
+            if (bossHpPanel != null) bossHpPanel.SetActive(true);
+            if (bossNameText != null) bossNameText.text = bossName;
+            UpdateBossHP(current, max);
+        }
+
+        public void UpdateBossHP(float current, float max)
+        {
+            if (bossHpBar != null && max > 0)
+            {
+                bossHpBar.value = Mathf.Clamp01(current / max);
+            }
+        }
+
+        public void HideBossHP()
+        {
+            if (bossHpPanel != null) bossHpPanel.SetActive(false);
         }
 
         public void ShowCombo(int count)

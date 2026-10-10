@@ -153,25 +153,28 @@ namespace MiniKingdom.Combat
                 }
             }
 
-            string text = isCrit ? $"💥 {Mathf.RoundToInt(damage)}" : $"{Mathf.RoundToInt(damage)}";
+            string text = isCrit ? $"CRIT! {Mathf.RoundToInt(damage)}" : $"{Mathf.RoundToInt(damage)}";
+
+            if (floatingTextPrefab == null)
+            {
+                floatingTextPrefab = Resources.Load<FloatingText>("Prefabs/UI/FloatingText");
+#if UNITY_EDITOR
+                if (floatingTextPrefab == null)
+                {
+                    floatingTextPrefab = UnityEditor.AssetDatabase.LoadAssetAtPath<FloatingText>("Assets/Prefabs/UI/FloatingText.prefab");
+                }
+#endif
+            }
 
             if (floatingTextPrefab != null)
             {
-                Transform parent = worldSpaceCanvas != null ? worldSpaceCanvas.transform : null;
-                var ft = Instantiate(floatingTextPrefab, parent);
-                ft.Setup(text, color, pos);
-            }
-            else
-            {
-                // Fallback: 씬 내 World Canvas 동적 생성 또는 찾기
-                if (worldSpaceCanvas == null)
+                Canvas targetCanvas = worldSpaceCanvas;
+                if (targetCanvas == null)
                 {
-                    var existingCanvas = GameObject.Find("WorldSpaceCanvas");
-                    if (existingCanvas != null)
-                    {
-                        worldSpaceCanvas = existingCanvas.GetComponent<Canvas>();
-                    }
+                    targetCanvas = FindFirstObjectByType<Canvas>();
                 }
+                var ft = Instantiate(floatingTextPrefab, targetCanvas != null ? targetCanvas.transform : null);
+                ft.Setup(text, color, pos);
             }
         }
     }

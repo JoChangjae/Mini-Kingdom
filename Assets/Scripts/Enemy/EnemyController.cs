@@ -17,6 +17,7 @@ namespace MiniKingdom.Enemy
         public float DEF { get; private set; }
         public float HP => _hp;
         public float MaxHP => _maxHp;
+        public bool IsDead => _currentState == EnemyState.Dead;
         
         protected EnemyState _currentState = EnemyState.Idle;
         protected float _hp;
@@ -160,7 +161,11 @@ namespace MiniKingdom.Enemy
                     // 실제 데미지 적용
                     float atk = data != null ? data.ATK : 10f;
                     var pStats = _player.GetComponent<Player.PlayerStats>();
-                    if (pStats != null) pStats.TakeDamage(atk, DamageType.Physical);
+                    if (pStats != null)
+                    {
+                        pStats.TakeDamage(atk, DamageType.Physical);
+                        Combat.CameraShake.Shake(0.15f, 0.12f);
+                    }
                 }
             }
         }
@@ -168,6 +173,14 @@ namespace MiniKingdom.Enemy
         public void TakeDamage(float amount)
         {
             _hp -= amount;
+
+            // 넉백 (Knockback) 물리 효과
+            var rb = GetComponent<Rigidbody2D>();
+            if (rb != null && _player != null)
+            {
+                Vector2 kbDir = ((Vector2)transform.position - (Vector2)_player.position).normalized;
+                rb.AddForce(kbDir * 4f, ForceMode2D.Impulse);
+            }
 
             // 피격 플래시
             if (_spriteRenderer != null)

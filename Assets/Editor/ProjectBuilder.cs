@@ -94,6 +94,19 @@ namespace MiniKingdom.Editor
             Debug.Log("🎉 Kingdom 씬 재생성 완료 (건물 카드 및 강화 시스템 연동 완료)");
         }
 
+        [MenuItem("Mini Kingdom/⚔️ 2. 던전 전투 및 몬스터 일괄 재구축 (Rebuild Combat)", false, 12)]
+        public static void RebuildDungeonCombat()
+        {
+            GenerateGameSprites();
+            CreateEnemyPrefabs();
+            CreatePlayerPrefab();
+            CreateFloatingTextPrefab();
+            CreateDungeonScene();
+            AssetDatabase.SaveAssets();
+            AssetDatabase.Refresh();
+            Debug.Log("🎉 던전 전투 시스템, 몬스터 스프라이트, 보스전 및 HUD 완벽 재구축 완료!");
+        }
+
         [MenuItem("Mini Kingdom/🔤 3. 한글 폰트(TMP Font Asset) 안내", false, 3)]
         public static void SetupKoreanFont()
         {
@@ -371,10 +384,243 @@ namespace MiniKingdom.Editor
             Debug.Log("✅ GameCore.prefab 생성 완료");
         }
 
+        public static void GenerateGameSprites()
+        {
+            EnsureFolder("Assets/Sprites");
+
+            CreatePlayerSprite("Assets/Sprites/spr_player.png");
+            CreateSlimeSprite("Assets/Sprites/spr_slime.png");
+            CreateWolfSprite("Assets/Sprites/spr_wolf.png");
+            CreateBossTrollSprite("Assets/Sprites/spr_boss_troll.png");
+            CreateSlashSprite("Assets/Sprites/spr_slash.png");
+
+            AssetDatabase.Refresh();
+        }
+
+        private static void SaveSpritePNG(Texture2D tex, string path, int ppu = 32)
+        {
+            byte[] bytes = tex.EncodeToPNG();
+            File.WriteAllBytes(path, bytes);
+            AssetDatabase.ImportAsset(path, ImportAssetOptions.ForceUpdate);
+            var importer = AssetImporter.GetAtPath(path) as TextureImporter;
+            if (importer != null)
+            {
+                importer.textureType = TextureImporterType.Sprite;
+                importer.spritePixelsPerUnit = ppu;
+                importer.filterMode = FilterMode.Point;
+                importer.textureCompression = TextureImporterCompression.Uncompressed;
+                importer.SaveAndReimport();
+            }
+        }
+
+        private static void CreatePlayerSprite(string path)
+        {
+            if (File.Exists(path)) return;
+            int size = 64;
+            Texture2D tex = new Texture2D(size, size, TextureFormat.RGBA32, false);
+            Color[] colors = new Color[size * size];
+            for (int i = 0; i < colors.Length; i++) colors[i] = Color.clear;
+
+            Color gold = new Color(1f, 0.84f, 0.0f);
+            Color crownJewel = new Color(0.9f, 0.2f, 0.2f);
+            Color silver = new Color(0.75f, 0.8f, 0.85f);
+            Color blueTunic = new Color(0.18f, 0.45f, 0.72f);
+            Color cape = new Color(0.7f, 0.15f, 0.15f);
+            Color skin = new Color(1f, 0.85f, 0.72f);
+            Color dark = new Color(0.15f, 0.18f, 0.22f);
+            Color steel = new Color(0.85f, 0.9f, 0.95f);
+
+            for (int y = 0; y < size; y++)
+            {
+                for (int x = 0; x < size; x++)
+                {
+                    if (y >= 14 && y <= 40 && ((x >= 14 && x <= 22) || (x >= 42 && x <= 50)))
+                        colors[y * size + x] = cape;
+                    else if (y >= 6 && y <= 16 && ((x >= 24 && x <= 29) || (x >= 35 && x <= 40)))
+                        colors[y * size + x] = dark;
+                    else if (y >= 16 && y <= 34 && x >= 22 && x <= 42)
+                        colors[y * size + x] = blueTunic;
+                    else if (y >= 35 && y <= 46 && x >= 24 && x <= 40)
+                        colors[y * size + x] = (y <= 40 && x >= 27 && x <= 37) ? skin : silver;
+                    else if (y >= 47 && y <= 54 && x >= 23 && x <= 41)
+                        colors[y * size + x] = (y >= 52 && (x == 24 || x == 32 || x == 40)) ? crownJewel : gold;
+                    else if (y >= 16 && y <= 48 && x >= 45 && x <= 48)
+                        colors[y * size + x] = (y <= 22) ? gold : steel;
+                    else if (y >= 20 && y <= 34 && x >= 14 && x <= 21)
+                        colors[y * size + x] = gold;
+                }
+            }
+
+            tex.SetPixels(colors);
+            tex.Apply();
+            SaveSpritePNG(tex, path, 32);
+        }
+
+        private static void CreateSlimeSprite(string path)
+        {
+            if (File.Exists(path)) return;
+            int size = 64;
+            Texture2D tex = new Texture2D(size, size, TextureFormat.RGBA32, false);
+            Color[] colors = new Color[size * size];
+            for (int i = 0; i < colors.Length; i++) colors[i] = Color.clear;
+
+            Color slimeGreen = new Color(0.18f, 0.8f, 0.44f);
+            Color slimeDark = new Color(0.12f, 0.6f, 0.32f);
+            Color slimeLight = new Color(0.6f, 0.95f, 0.72f);
+            Color eyeDark = new Color(0.08f, 0.2f, 0.12f);
+            Color white = Color.white;
+
+            Vector2 center = new Vector2(32f, 26f);
+
+            for (int y = 0; y < size; y++)
+            {
+                for (int x = 0; x < size; x++)
+                {
+                    float dx = (x - center.x) / 19f;
+                    float dy = (y - center.y) / (y < center.y ? 14f : 20f);
+                    float distSq = dx * dx + dy * dy;
+
+                    if (distSq <= 1.0f)
+                    {
+                        if (y >= 27 && y <= 33 && (x == 26 || x == 27 || x == 37 || x == 38))
+                        {
+                            if (y == 32 && (x == 27 || x == 38)) colors[y * size + x] = white;
+                            else colors[y * size + x] = eyeDark;
+                        }
+                        else if (distSq < 0.6f && x < 28 && y > 30) colors[y * size + x] = slimeLight;
+                        else if (y < 18) colors[y * size + x] = slimeDark;
+                        else colors[y * size + x] = slimeGreen;
+                    }
+                }
+            }
+
+            tex.SetPixels(colors);
+            tex.Apply();
+            SaveSpritePNG(tex, path, 32);
+        }
+
+        private static void CreateWolfSprite(string path)
+        {
+            if (File.Exists(path)) return;
+            int size = 64;
+            Texture2D tex = new Texture2D(size, size, TextureFormat.RGBA32, false);
+            Color[] colors = new Color[size * size];
+            for (int i = 0; i < colors.Length; i++) colors[i] = Color.clear;
+
+            Color wolfGray = new Color(0.35f, 0.4f, 0.45f);
+            Color wolfDark = new Color(0.2f, 0.24f, 0.28f);
+            Color redEye = new Color(0.95f, 0.2f, 0.15f);
+            Color white = Color.white;
+
+            for (int y = 0; y < size; y++)
+            {
+                for (int x = 0; x < size; x++)
+                {
+                    if (y >= 6 && y <= 18 && ((x >= 18 && x <= 22) || (x >= 26 && x <= 29) || (x >= 38 && x <= 42) || (x >= 46 && x <= 50)))
+                        colors[y * size + x] = wolfDark;
+                    else if (y >= 22 && y <= 36 && x >= 8 && x <= 18 && (y - x <= 20))
+                        colors[y * size + x] = wolfDark;
+                    else if (y >= 16 && y <= 34 && x >= 16 && x <= 46)
+                        colors[y * size + x] = wolfGray;
+                    else if (y >= 24 && y <= 40 && x >= 40 && x <= 56)
+                    {
+                        if (y >= 32 && y <= 35 && (x == 48 || x == 49)) colors[y * size + x] = redEye;
+                        else if (y == 25 && x >= 52 && x <= 54) colors[y * size + x] = white;
+                        else colors[y * size + x] = wolfGray;
+                    }
+                    else if (y >= 40 && y <= 50 && (x >= 42 && x <= 46))
+                        colors[y * size + x] = wolfDark;
+                }
+            }
+
+            tex.SetPixels(colors);
+            tex.Apply();
+            SaveSpritePNG(tex, path, 32);
+        }
+
+        private static void CreateBossTrollSprite(string path)
+        {
+            if (File.Exists(path)) return;
+            int size = 128;
+            Texture2D tex = new Texture2D(size, size, TextureFormat.RGBA32, false);
+            Color[] colors = new Color[size * size];
+            for (int i = 0; i < colors.Length; i++) colors[i] = Color.clear;
+
+            Color trollMoss = new Color(0.3f, 0.42f, 0.28f);
+            Color trollDark = new Color(0.2f, 0.28f, 0.18f);
+            Color rock = new Color(0.48f, 0.5f, 0.52f);
+            Color clubWood = new Color(0.42f, 0.24f, 0.12f);
+            Color clubIron = new Color(0.72f, 0.74f, 0.76f);
+            Color rageEye = new Color(1f, 0.55f, 0.05f);
+            Color bone = new Color(0.95f, 0.95f, 0.9f);
+
+            for (int y = 0; y < size; y++)
+            {
+                for (int x = 0; x < size; x++)
+                {
+                    if (x >= 92 && x <= 116 && y >= 20 && y <= 118)
+                    {
+                        colors[y * size + x] = ((x == 92 || x == 116) && y % 14 >= 10) ? clubIron : clubWood;
+                    }
+                    else if (y >= 10 && y <= 36 && ((x >= 34 && x <= 52) || (x >= 64 && x <= 82)))
+                        colors[y * size + x] = trollDark;
+                    else if (y >= 36 && y <= 84 && x >= 30 && x <= 86)
+                        colors[y * size + x] = trollMoss;
+                    else if (y >= 74 && y <= 98 && ((x >= 20 && x <= 38) || (x >= 78 && x <= 96)))
+                        colors[y * size + x] = rock;
+                    else if (y >= 80 && y <= 114 && x >= 42 && x <= 74)
+                    {
+                        if (y >= 104 && (x <= 48 || x >= 68)) colors[y * size + x] = rock;
+                        else if (y >= 94 && y <= 98 && (x == 52 || x == 53 || x == 63 || x == 64)) colors[y * size + x] = rageEye;
+                        else if (y >= 84 && y <= 90 && (x == 49 || x == 67)) colors[y * size + x] = bone;
+                        else colors[y * size + x] = trollDark;
+                    }
+                }
+            }
+
+            tex.SetPixels(colors);
+            tex.Apply();
+            SaveSpritePNG(tex, path, 48);
+        }
+
+        private static void CreateSlashSprite(string path)
+        {
+            if (File.Exists(path)) return;
+            int size = 64;
+            Texture2D tex = new Texture2D(size, size, TextureFormat.RGBA32, false);
+            Color[] colors = new Color[size * size];
+            for (int i = 0; i < colors.Length; i++) colors[i] = Color.clear;
+
+            Color white = Color.white;
+            Color cyan = new Color(0.2f, 0.9f, 1f, 0.9f);
+            Color glow = new Color(0f, 0.6f, 1f, 0.5f);
+
+            for (int y = 0; y < size; y++)
+            {
+                for (int x = 0; x < size; x++)
+                {
+                    float targetY = 32f + 24f * Mathf.Sin((x - 10f) / 44f * Mathf.PI);
+                    float diff = Mathf.Abs(y - targetY);
+                    if (x >= 10 && x <= 54)
+                    {
+                        if (diff <= 1.5f) colors[y * size + x] = white;
+                        else if (diff <= 4f) colors[y * size + x] = cyan;
+                        else if (diff <= 7f) colors[y * size + x] = glow;
+                    }
+                }
+            }
+
+            tex.SetPixels(colors);
+            tex.Apply();
+            SaveSpritePNG(tex, path, 32);
+        }
+
         private static void CreatePlayerPrefab()
         {
+            GenerateGameSprites();
+
+            var playerSprite = AssetDatabase.LoadAssetAtPath<Sprite>("Assets/Sprites/spr_player.png");
             string path = "Assets/Prefabs/Entities/Player.prefab";
-            if (File.Exists(path)) return;
 
             GameObject player = new GameObject("Player");
             player.tag = "Player";
@@ -386,7 +632,10 @@ namespace MiniKingdom.Editor
             var col = player.AddComponent<CircleCollider2D>();
             col.radius = 0.5f;
 
-            player.AddComponent<SpriteRenderer>();
+            var sr = player.AddComponent<SpriteRenderer>();
+            sr.sprite = playerSprite;
+            sr.sortingOrder = 10;
+
             player.AddComponent<PlayerStats>();
             player.AddComponent<PlayerController>();
             player.AddComponent<PlayerInventory>();
@@ -398,57 +647,86 @@ namespace MiniKingdom.Editor
 
         private static void CreateEnemyPrefabs()
         {
+            GenerateGameSprites();
+
+            var slimeSprite = AssetDatabase.LoadAssetAtPath<Sprite>("Assets/Sprites/spr_slime.png");
+            var wolfSprite = AssetDatabase.LoadAssetAtPath<Sprite>("Assets/Sprites/spr_wolf.png");
+            var bossSprite = AssetDatabase.LoadAssetAtPath<Sprite>("Assets/Sprites/spr_boss_troll.png");
+
+            var slimeData = AssetDatabase.LoadAssetAtPath<EnemyData>("Assets/Data/Enemies/Enemy_Slime.asset");
+            var wolfData = AssetDatabase.LoadAssetAtPath<EnemyData>("Assets/Data/Enemies/Enemy_Wolf.asset");
+            var bossData = AssetDatabase.LoadAssetAtPath<EnemyData>("Assets/Data/Enemies/Boss_Troll.asset");
+
+            // 1. Slime
             string slimePath = "Assets/Prefabs/Entities/Enemy_Slime.prefab";
-            if (!File.Exists(slimePath))
-            {
-                GameObject slime = new GameObject("Enemy_Slime");
-                slime.tag = "Enemy";
-                var rb = slime.AddComponent<Rigidbody2D>();
-                rb.gravityScale = 0f;
-                rb.freezeRotation = true;
-                var col = slime.AddComponent<CircleCollider2D>();
-                col.radius = 0.4f;
-                slime.AddComponent<SpriteRenderer>();
-                slime.AddComponent<EnemyController>();
-                slime.AddComponent<MiniKingdom.Items.LootManager>();
+            GameObject slime = new GameObject("Enemy_Slime");
+            slime.tag = "Enemy";
+            var rbS = slime.AddComponent<Rigidbody2D>();
+            rbS.gravityScale = 0f;
+            rbS.freezeRotation = true;
+            var colS = slime.AddComponent<CircleCollider2D>();
+            colS.radius = 0.45f;
+            var srS = slime.AddComponent<SpriteRenderer>();
+            srS.sprite = slimeSprite;
+            srS.sortingOrder = 5;
+            var ctrlS = slime.AddComponent<EnemyController>();
+            ctrlS.SetData(slimeData);
+            slime.AddComponent<MiniKingdom.Items.LootManager>();
+            PrefabUtility.SaveAsPrefabAsset(slime, slimePath);
+            GameObject.DestroyImmediate(slime);
 
-                PrefabUtility.SaveAsPrefabAsset(slime, slimePath);
-                GameObject.DestroyImmediate(slime);
-                Debug.Log("✅ Enemy_Slime.prefab 생성 완료");
-            }
+            // 2. Wolf
+            string wolfPath = "Assets/Prefabs/Entities/Enemy_Wolf.prefab";
+            GameObject wolf = new GameObject("Enemy_Wolf");
+            wolf.tag = "Enemy";
+            var rbW = wolf.AddComponent<Rigidbody2D>();
+            rbW.gravityScale = 0f;
+            rbW.freezeRotation = true;
+            var colW = wolf.AddComponent<CircleCollider2D>();
+            colW.radius = 0.5f;
+            var srW = wolf.AddComponent<SpriteRenderer>();
+            srW.sprite = wolfSprite;
+            srW.sortingOrder = 5;
+            var ctrlW = wolf.AddComponent<WolfEnemyController>();
+            ctrlW.SetData(wolfData);
+            wolf.AddComponent<MiniKingdom.Items.LootManager>();
+            PrefabUtility.SaveAsPrefabAsset(wolf, wolfPath);
+            GameObject.DestroyImmediate(wolf);
 
+            // 3. Boss Troll
             string trollPath = "Assets/Prefabs/Entities/Boss_Troll.prefab";
-            if (!File.Exists(trollPath))
-            {
-                GameObject troll = new GameObject("Boss_Troll");
-                troll.tag = "Enemy";
-                var rb = troll.AddComponent<Rigidbody2D>();
-                rb.gravityScale = 0f;
-                rb.freezeRotation = true;
-                var col = troll.AddComponent<BoxCollider2D>();
-                col.size = new Vector2(1.5f, 1.5f);
-                troll.AddComponent<SpriteRenderer>();
-                troll.AddComponent<BossController>();
-                troll.AddComponent<MiniKingdom.Items.LootManager>();
+            GameObject troll = new GameObject("Boss_Troll");
+            troll.tag = "Enemy";
+            var rbT = troll.AddComponent<Rigidbody2D>();
+            rbT.gravityScale = 0f;
+            rbT.freezeRotation = true;
+            var colT = troll.AddComponent<CircleCollider2D>();
+            colT.radius = 1.0f;
+            var srT = troll.AddComponent<SpriteRenderer>();
+            srT.sprite = bossSprite;
+            srT.sortingOrder = 6;
+            var ctrlT = troll.AddComponent<BossController>();
+            ctrlT.SetData(bossData);
+            troll.AddComponent<MiniKingdom.Items.LootManager>();
+            PrefabUtility.SaveAsPrefabAsset(troll, trollPath);
+            GameObject.DestroyImmediate(troll);
 
-                PrefabUtility.SaveAsPrefabAsset(troll, trollPath);
-                GameObject.DestroyImmediate(troll);
-                Debug.Log("✅ Boss_Troll.prefab 생성 완료");
-            }
+            Debug.Log("✅ Enemy_Slime, Enemy_Wolf, Boss_Troll 프리팹 생성 완료");
         }
 
         private static void CreateFloatingTextPrefab()
         {
             string path = "Assets/Prefabs/UI/FloatingText.prefab";
-            if (File.Exists(path)) return;
 
             GameObject ftObj = new GameObject("FloatingText");
             var rect = ftObj.AddComponent<RectTransform>();
-            rect.sizeDelta = new Vector2(100, 40);
+            rect.sizeDelta = new Vector2(160, 40);
 
             var textMesh = ftObj.AddComponent<TextMeshProUGUI>();
             textMesh.fontSize = 24;
+            textMesh.fontStyle = FontStyles.Bold;
             textMesh.alignment = TextAlignmentOptions.Center;
+            textMesh.raycastTarget = false;
 
             ftObj.AddComponent<FloatingText>();
 
@@ -758,6 +1036,7 @@ namespace MiniKingdom.Editor
             cam.backgroundColor = new Color(0.08f, 0.08f, 0.12f);
             cam.clearFlags = CameraClearFlags.SolidColor;
             camGO.AddComponent<AudioListener>();
+            camGO.AddComponent<CameraShake>();
             camGO.tag = "MainCamera";
 
             // EventSystem
@@ -772,11 +1051,17 @@ namespace MiniKingdom.Editor
             dungeonSys.AddComponent<RoomManager>();
             var spawner = dungeonSys.AddComponent<EnemySpawner>();
 
-            // Wire default enemy prefabs into spawner
+            // Wire enemy prefabs into spawner
             var enemySlimePrefab = AssetDatabase.LoadAssetAtPath<GameObject>("Assets/Prefabs/Entities/Enemy_Slime.prefab");
+            var enemyWolfPrefab = AssetDatabase.LoadAssetAtPath<GameObject>("Assets/Prefabs/Entities/Enemy_Wolf.prefab");
             var bossTrollPrefab = AssetDatabase.LoadAssetAtPath<GameObject>("Assets/Prefabs/Entities/Boss_Troll.prefab");
+
             var fieldDefEnemy = typeof(EnemySpawner).GetField("defaultEnemyPrefab", System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Instance);
             if (fieldDefEnemy != null && enemySlimePrefab != null) fieldDefEnemy.SetValue(spawner, enemySlimePrefab);
+
+            var fieldWolfEnemy = typeof(EnemySpawner).GetField("wolfEnemyPrefab", System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Instance);
+            if (fieldWolfEnemy != null && enemyWolfPrefab != null) fieldWolfEnemy.SetValue(spawner, enemyWolfPrefab);
+
             var fieldBoss = typeof(EnemySpawner).GetField("bossPrefab", System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Instance);
             if (fieldBoss != null && bossTrollPrefab != null) fieldBoss.SetValue(spawner, bossTrollPrefab);
 
@@ -789,7 +1074,136 @@ namespace MiniKingdom.Editor
 
             var hudGO = new GameObject("DungeonHUD");
             hudGO.transform.SetParent(canvasGO.transform, false);
-            hudGO.AddComponent<DungeonHUDScreen>();
+            var hudScreen = hudGO.AddComponent<DungeonHUDScreen>();
+
+            // 1. Player HP Bar (Top Left)
+            GameObject playerHpGO = new GameObject("PlayerHpBar");
+            playerHpGO.transform.SetParent(hudGO.transform, false);
+            var hpRect = playerHpGO.AddComponent<RectTransform>();
+            hpRect.anchoredPosition = new Vector2(-220, 350);
+            hpRect.sizeDelta = new Vector2(240, 26);
+            var hpSlider = playerHpGO.AddComponent<Slider>();
+            hpSlider.minValue = 0f;
+            hpSlider.maxValue = 1f;
+            hpSlider.value = 1f;
+
+            var hpBg = playerHpGO.AddComponent<Image>();
+            hpBg.color = new Color(0.2f, 0.2f, 0.2f, 0.8f);
+
+            GameObject fillArea = new GameObject("Fill Area");
+            fillArea.transform.SetParent(playerHpGO.transform, false);
+            var faRect = fillArea.AddComponent<RectTransform>();
+            faRect.anchorMin = Vector2.zero;
+            faRect.anchorMax = Vector2.one;
+            faRect.sizeDelta = Vector2.zero;
+
+            GameObject fillObj = new GameObject("Fill");
+            fillObj.transform.SetParent(fillArea.transform, false);
+            var fillRect = fillObj.AddComponent<RectTransform>();
+            fillRect.anchorMin = Vector2.zero;
+            fillRect.anchorMax = Vector2.one;
+            fillRect.sizeDelta = Vector2.zero;
+            var fillImg = fillObj.AddComponent<Image>();
+            fillImg.color = new Color(0.2f, 0.8f, 0.35f);
+            hpSlider.fillRect = fillRect;
+
+            GameObject hpTextGO = new GameObject("HpText");
+            hpTextGO.transform.SetParent(playerHpGO.transform, false);
+            var hpText = hpTextGO.AddComponent<TextMeshProUGUI>();
+            hpText.text = "100 / 100";
+            hpText.fontSize = 16;
+            hpText.alignment = TextAlignmentOptions.Center;
+            hpText.raycastTarget = false;
+
+            // 2. Boss HP Panel (Top Center)
+            GameObject bossPanelGO = new GameObject("BossHpPanel");
+            bossPanelGO.transform.SetParent(hudGO.transform, false);
+            var bpRect = bossPanelGO.AddComponent<RectTransform>();
+            bpRect.anchoredPosition = new Vector2(0, 345);
+            bpRect.sizeDelta = new Vector2(500, 48);
+
+            GameObject bossNameGO = new GameObject("BossNameText");
+            bossNameGO.transform.SetParent(bossPanelGO.transform, false);
+            var bnText = bossNameGO.AddComponent<TextMeshProUGUI>();
+            bnText.text = "숲 트롤 (보스)";
+            bnText.fontSize = 18;
+            bnText.fontStyle = FontStyles.Bold;
+            bnText.alignment = TextAlignmentOptions.Center;
+            bnText.raycastTarget = false;
+            var bnRect = bossNameGO.GetComponent<RectTransform>();
+            bnRect.anchoredPosition = new Vector2(0, 14);
+            bnRect.sizeDelta = new Vector2(400, 24);
+
+            GameObject bossSliderGO = new GameObject("BossHpSlider");
+            bossSliderGO.transform.SetParent(bossPanelGO.transform, false);
+            var bsRect = bossSliderGO.AddComponent<RectTransform>();
+            bsRect.anchoredPosition = new Vector2(0, -12);
+            bsRect.sizeDelta = new Vector2(460, 20);
+            var bossSlider = bossSliderGO.AddComponent<Slider>();
+            var bsBg = bossSliderGO.AddComponent<Image>();
+            bsBg.color = new Color(0.2f, 0.1f, 0.1f, 0.85f);
+
+            GameObject bFillArea = new GameObject("Fill Area");
+            bFillArea.transform.SetParent(bossSliderGO.transform, false);
+            var bfaRect = bFillArea.AddComponent<RectTransform>();
+            bfaRect.anchorMin = Vector2.zero;
+            bfaRect.anchorMax = Vector2.one;
+            bfaRect.sizeDelta = Vector2.zero;
+
+            GameObject bFillObj = new GameObject("Fill");
+            bFillObj.transform.SetParent(bFillArea.transform, false);
+            var bFillRect = bFillObj.AddComponent<RectTransform>();
+            bFillRect.anchorMin = Vector2.zero;
+            bFillRect.anchorMax = Vector2.one;
+            bFillRect.sizeDelta = Vector2.zero;
+            var bFillImg = bFillObj.AddComponent<Image>();
+            bFillImg.color = new Color(0.9f, 0.2f, 0.15f);
+            bossSlider.fillRect = bFillRect;
+            bossSlider.value = 1f;
+
+            bossPanelGO.SetActive(false);
+
+            // 3. Perfect Dodge Flash
+            GameObject dodgeFlashGO = new GameObject("PerfectDodgeFlash");
+            dodgeFlashGO.transform.SetParent(hudGO.transform, false);
+            var flashImg = dodgeFlashGO.AddComponent<Image>();
+            flashImg.color = Color.clear;
+            flashImg.raycastTarget = false;
+            var flashRect = dodgeFlashGO.GetComponent<RectTransform>();
+            flashRect.anchorMin = Vector2.zero;
+            flashRect.anchorMax = Vector2.one;
+            flashRect.sizeDelta = Vector2.zero;
+
+            // 4. Combo Panel
+            GameObject comboPanelGO = new GameObject("ComboPanel");
+            comboPanelGO.transform.SetParent(hudGO.transform, false);
+            var cpRect = comboPanelGO.AddComponent<RectTransform>();
+            cpRect.anchoredPosition = new Vector2(220, 120);
+            cpRect.sizeDelta = new Vector2(160, 40);
+
+            GameObject comboTextGO = new GameObject("ComboText");
+            comboTextGO.transform.SetParent(comboPanelGO.transform, false);
+            var comboText = comboTextGO.AddComponent<TextMeshProUGUI>();
+            comboText.text = "3 Hits!";
+            comboText.fontSize = 24;
+            comboText.fontStyle = FontStyles.Bold;
+            comboText.color = new Color(1f, 0.85f, 0.2f);
+            comboText.alignment = TextAlignmentOptions.Center;
+            comboText.raycastTarget = false;
+
+            comboPanelGO.SetActive(false);
+
+            // Wire HUD Screen fields via reflection
+            typeof(DungeonHUDScreen).GetField("hpBar", System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Instance)?.SetValue(hudScreen, hpSlider);
+            typeof(DungeonHUDScreen).GetField("hpText", System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Instance)?.SetValue(hudScreen, hpText);
+            typeof(DungeonHUDScreen).GetField("bossHpPanel", System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Instance)?.SetValue(hudScreen, bossPanelGO);
+            typeof(DungeonHUDScreen).GetField("bossHpBar", System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Instance)?.SetValue(hudScreen, bossSlider);
+            typeof(DungeonHUDScreen).GetField("bossNameText", System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Instance)?.SetValue(hudScreen, bnText);
+            typeof(DungeonHUDScreen).GetField("perfectDodgeFlash", System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Instance)?.SetValue(hudScreen, flashImg);
+            typeof(DungeonHUDScreen).GetField("comboPanel", System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Instance)?.SetValue(hudScreen, comboPanelGO);
+            typeof(DungeonHUDScreen).GetField("comboText", System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Instance)?.SetValue(hudScreen, comboText);
+
+            EditorUtility.SetDirty(hudScreen);
 
             var levelUpGO = new GameObject("LevelUpScreen");
             levelUpGO.transform.SetParent(canvasGO.transform, false);

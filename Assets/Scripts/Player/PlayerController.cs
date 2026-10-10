@@ -178,19 +178,51 @@ namespace MiniKingdom.Player
                 _perfectDodgeActive = false;
             }
 
-            // Mock attack
-            CombatSystem.Instance.ProcessAttack(this.gameObject, _targetEnemy.gameObject, damage, DamageType.Physical);
+            // Perform attack via CombatSystem
+            CombatSystem.Instance?.ProcessAttack(this.gameObject, _targetEnemy.gameObject, damage, DamageType.Physical);
+
+            // Visual Slash Effect
+            SpawnSlashEffect(_targetEnemy.position);
+        }
+
+        private void SpawnSlashEffect(Vector3 targetPos)
+        {
+            Vector3 midPoint = (transform.position + targetPos) * 0.5f;
+            Vector2 dir = (targetPos - transform.position).normalized;
+            float angle = Mathf.Atan2(dir.y, dir.x) * Mathf.Rad2Deg;
+
+            GameObject slash = new GameObject("SlashEffect");
+            slash.transform.position = midPoint;
+            slash.transform.rotation = Quaternion.Euler(0, 0, angle);
+            slash.transform.localScale = new Vector3(1.2f, 1.2f, 1f);
+
+            var sr = slash.AddComponent<SpriteRenderer>();
+            var slashSprite = Resources.Load<Sprite>("Sprites/spr_slash");
+#if UNITY_EDITOR
+            if (slashSprite == null)
+            {
+                slashSprite = UnityEditor.AssetDatabase.LoadAssetAtPath<Sprite>("Assets/Sprites/spr_slash.png");
+            }
+#endif
+            if (slashSprite != null)
+            {
+                sr.sprite = slashSprite;
+            }
+            sr.color = new Color(0.6f, 0.95f, 1f, 0.9f);
+            sr.sortingOrder = 15;
+
+            Destroy(slash, 0.15f);
         }
 
         private void FindNearestEnemy()
         {
-            // 간단한 O(N) 탐색, 나중에 Spatial Partitioning 최적화 가능
-            GameObject[] enemies = GameObject.FindGameObjectsWithTag("Enemy");
+            var enemies = FindObjectsByType<Enemy.EnemyController>(FindObjectsSortMode.None);
             float minDist = float.MaxValue;
             Transform closest = null;
 
             foreach (var enemy in enemies)
             {
+                if (enemy == null || enemy.IsDead) continue;
                 float dist = Vector2.Distance(transform.position, enemy.transform.position);
                 if (dist < minDist)
                 {
@@ -223,7 +255,8 @@ namespace MiniKingdom.Player
             _perfectDodgeActive = true;
             OnPerfectDodge?.Invoke();
             
-            // Time manipulation
+            // Screen shake & time manipulation
+            Combat.CameraShake.Shake(0.25f, 0.2f);
             Time.timeScale = perfectDodgeTimeScale;
             Invoke(nameof(ResetTimeScale), perfectDodgeSlowDuration * perfectDodgeTimeScale); // Scaled duration
 
