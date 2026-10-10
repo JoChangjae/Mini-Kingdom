@@ -107,10 +107,122 @@ namespace MiniKingdom.Editor
             Debug.Log("🎉 던전 전투 시스템, 몬스터 스프라이트, 보스전 및 HUD 완벽 재구축 완료!");
         }
 
-        [MenuItem("Mini Kingdom/🔤 3. 한글 폰트(TMP Font Asset) 안내", false, 3)]
+        [MenuItem("Mini Kingdom/🔤 3. 한글 폰트(TMP Font Asset) 완벽 설정 (Fix Korean Fonts)", false, 3)]
         public static void SetupKoreanFont()
         {
-            Debug.Log("ℹ️ TMP Settings가 안정적인 기본 폰트로 설정되어 있습니다.");
+            Debug.Log("한글 폰트(Malgun Gothic SDF) 설정을 시작합니다...");
+            string fontPath = "Assets/Fonts/MalgunGothic.ttf";
+            string assetPath = "Assets/Fonts/MalgunGothic SDF.asset";
+
+            if (!File.Exists(fontPath))
+            {
+                EnsureFolder("Assets/Fonts");
+                if (File.Exists("C:/Windows/Fonts/malgun.ttf"))
+                {
+                    File.Copy("C:/Windows/Fonts/malgun.ttf", fontPath, true);
+                    AssetDatabase.Refresh();
+                }
+            }
+
+            var font = AssetDatabase.LoadAssetAtPath<Font>(fontPath);
+            if (font == null)
+            {
+                Debug.LogWarning("폰트 파일을 불러올 수 없습니다: " + fontPath);
+                return;
+            }
+
+            var fontAsset = AssetDatabase.LoadAssetAtPath<TMP_FontAsset>(assetPath);
+            if (fontAsset == null)
+            {
+                fontAsset = TMP_FontAsset.CreateFontAsset(
+                    font,
+                    42,
+                    4,
+                    GlyphRenderMode.SDFAA,
+                    1024,
+                    1024,
+                    AtlasPopulationMode.Dynamic,
+                    true
+                );
+
+                if (fontAsset != null)
+                {
+                    AssetDatabase.CreateAsset(fontAsset, assetPath);
+
+                    if (fontAsset.atlasTextures != null)
+                    {
+                        for (int i = 0; i < fontAsset.atlasTextures.Length; i++)
+                        {
+                            if (fontAsset.atlasTextures[i] != null)
+                            {
+                                fontAsset.atlasTextures[i].name = $"{fontAsset.name} Atlas {i}";
+                                AssetDatabase.AddObjectToAsset(fontAsset.atlasTextures[i], fontAsset);
+                            }
+                        }
+                    }
+
+                    if (fontAsset.material != null)
+                    {
+                        fontAsset.material.name = $"{fontAsset.name} Material";
+                        AssetDatabase.AddObjectToAsset(fontAsset.material, fontAsset);
+                    }
+
+                    AssetDatabase.SaveAssets();
+                    AssetDatabase.Refresh();
+                    Debug.Log("✅ Dynamic MalgunGothic SDF 폰트 에셋 및 서브에셋 생성 완료!");
+                }
+            }
+
+            // 1. TMP Settings에 기본 및 Fallback 폰트로 등록
+            var tmpSettings = Resources.Load<TMP_Settings>("TMP Settings");
+            if (tmpSettings != null && fontAsset != null)
+            {
+                var defaultField = typeof(TMP_Settings).GetField("m_defaultFontAsset", System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Instance);
+                if (defaultField != null)
+                {
+                    defaultField.SetValue(tmpSettings, fontAsset);
+                }
+
+                var fallbackField = typeof(TMP_Settings).GetField("m_fallbackFontAssets", System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Instance);
+                if (fallbackField != null)
+                {
+                    var list = (List<TMP_FontAsset>)fallbackField.GetValue(tmpSettings);
+                    if (list == null) list = new List<TMP_FontAsset>();
+                    if (!list.Contains(fontAsset)) list.Add(fontAsset);
+                    fallbackField.SetValue(tmpSettings, list);
+                }
+
+                EditorUtility.SetDirty(tmpSettings);
+                AssetDatabase.SaveAssets();
+                Debug.Log("✅ TMP Settings에 MalgunGothic SDF 기본 폰트로 설정 완료!");
+            }
+
+            // 2. LiberationSans SDF의 Fallback에도 등록
+            var libSans = AssetDatabase.LoadAssetAtPath<TMP_FontAsset>("Assets/TextMesh Pro/Resources/Fonts & Materials/LiberationSans SDF.asset");
+            if (libSans != null && fontAsset != null)
+            {
+                var fField = typeof(TMP_FontAsset).GetField("m_FallbackFontAssetTable", System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Instance);
+                if (fField != null)
+                {
+                    var table = (List<TMP_FontAsset>)fField.GetValue(libSans);
+                    if (table == null) table = new List<TMP_FontAsset>();
+                    if (!table.Contains(fontAsset)) table.Add(fontAsset);
+                    fField.SetValue(libSans, table);
+                    EditorUtility.SetDirty(libSans);
+                    AssetDatabase.SaveAssets();
+                    Debug.Log("✅ LiberationSans SDF Fallback 리스트에 MalgunGothic SDF 등록 완료!");
+                }
+            }
+
+            // 3. 열려있는 씬의 모든 TextMeshProUGUI 컴포넌트 폰트 즉시 갱신
+            if (fontAsset != null)
+            {
+                foreach (var tmp in Object.FindObjectsByType<TextMeshProUGUI>(FindObjectsInactive.Include, FindObjectsSortMode.None))
+                {
+                    tmp.font = fontAsset;
+                    EditorUtility.SetDirty(tmp);
+                }
+            }
         }
 
         [MenuItem("Mini Kingdom/📦 2. 기본 데이터 에셋(.asset) 일괄 생성", false, 2)]
