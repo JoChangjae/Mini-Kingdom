@@ -1337,34 +1337,530 @@ namespace MiniKingdom.Editor
             EditorUtility.SetDirty(levelUpScreen);
             levelUpGO.SetActive(false);
 
+            // --- 6. RunResultScreen UI ---
             var resultGO = new GameObject("RunResultScreen");
             resultGO.transform.SetParent(canvasGO.transform, false);
-            resultGO.AddComponent<RunResultScreen>();
+            var resRect = resultGO.AddComponent<RectTransform>();
+            resRect.anchorMin = Vector2.zero;
+            resRect.anchorMax = Vector2.one;
+            resRect.sizeDelta = Vector2.zero;
+            var resBg = resultGO.AddComponent<Image>();
+            resBg.color = new Color(0.04f, 0.05f, 0.08f, 0.95f);
+
+            var resTitleGO = new GameObject("ResultTitle");
+            resTitleGO.transform.SetParent(resultGO.transform, false);
+            var rtRect = resTitleGO.AddComponent<RectTransform>();
+            rtRect.anchoredPosition = new Vector2(0, 180);
+            rtRect.sizeDelta = new Vector2(400, 60);
+            var rtText = resTitleGO.AddComponent<TextMeshProUGUI>();
+            rtText.text = "👑 던전 탐험 결과";
+            rtText.fontSize = 36;
+            rtText.fontStyle = FontStyles.Bold;
+            rtText.alignment = TextAlignmentOptions.Center;
+            rtText.color = new Color(1f, 0.85f, 0.2f);
+
+            var statsGO = new GameObject("StatsSummary");
+            statsGO.transform.SetParent(resultGO.transform, false);
+            var stRect = statsGO.AddComponent<RectTransform>();
+            stRect.anchoredPosition = new Vector2(0, 60);
+            stRect.sizeDelta = new Vector2(500, 100);
+            var stText = statsGO.AddComponent<TextMeshProUGUI>();
+            stText.text = "방 클리어: 0개 | 처치: 0마리\n골드: +0 | 목재: +0";
+            stText.fontSize = 20;
+            stText.alignment = TextAlignmentOptions.Center;
+            stText.color = Color.white;
+
+            var returnBtnGO = new GameObject("ReturnToKingdomBtn");
+            returnBtnGO.transform.SetParent(resultGO.transform, false);
+            var rBtnRect = returnBtnGO.AddComponent<RectTransform>();
+            rBtnRect.anchoredPosition = new Vector2(0, -120);
+            rBtnRect.sizeDelta = new Vector2(240, 50);
+            var rBtnImg = returnBtnGO.AddComponent<Image>();
+            rBtnImg.color = new Color(0.2f, 0.5f, 0.8f);
+            var rBtn = returnBtnGO.AddComponent<Button>();
+            var rBtnTextGO = new GameObject("Text");
+            rBtnTextGO.transform.SetParent(returnBtnGO.transform, false);
+            var rbtRect = rBtnTextGO.AddComponent<RectTransform>();
+            rbtRect.anchorMin = Vector2.zero;
+            rbtRect.anchorMax = Vector2.one;
+            rbtRect.sizeDelta = Vector2.zero;
+            var rbtText = rBtnTextGO.AddComponent<TextMeshProUGUI>();
+            rbtText.text = "🏰 왕국으로 귀환";
+            rbtText.fontSize = 20;
+            rbtText.fontStyle = FontStyles.Bold;
+            rbtText.alignment = TextAlignmentOptions.Center;
+
+            var runResultScreen = resultGO.AddComponent<RunResultScreen>();
+            typeof(RunResultScreen).GetField("successTitle", System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Instance)?.SetValue(runResultScreen, resTitleGO);
+            typeof(RunResultScreen).GetField("statsSummaryText", System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Instance)?.SetValue(runResultScreen, stText);
+            typeof(RunResultScreen).GetField("returnToKingdomBtn", System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Instance)?.SetValue(runResultScreen, rBtn);
+            typeof(ScreenBase).GetField("screenType", System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Instance)?.SetValue(runResultScreen, ScreenType.RunResult);
+            EditorUtility.SetDirty(runResultScreen);
             resultGO.SetActive(false);
 
+            // --- 7. BranchSelectionScreen UI ---
             var branchGO = new GameObject("BranchSelectionScreen");
             branchGO.transform.SetParent(canvasGO.transform, false);
-            branchGO.AddComponent<BranchSelectionScreen>();
+            var brRect = branchGO.AddComponent<RectTransform>();
+            brRect.anchorMin = Vector2.zero;
+            brRect.anchorMax = Vector2.one;
+            brRect.sizeDelta = Vector2.zero;
+            var brBg = branchGO.AddComponent<Image>();
+            brBg.color = new Color(0.04f, 0.05f, 0.08f, 0.92f);
+
+            var brTitleGO = new GameObject("BranchTitle");
+            brTitleGO.transform.SetParent(branchGO.transform, false);
+            var brtRect = brTitleGO.AddComponent<RectTransform>();
+            brtRect.anchoredPosition = new Vector2(0, 180);
+            brtRect.sizeDelta = new Vector2(400, 60);
+            var brtText = brTitleGO.AddComponent<TextMeshProUGUI>();
+            brtText.text = "갈림길 선택";
+            brtText.fontSize = 34;
+            brtText.fontStyle = FontStyles.Bold;
+            brtText.alignment = TextAlignmentOptions.Center;
+            brtText.color = new Color(1f, 0.85f, 0.2f);
+
+            // Path A Button
+            var pathAGO = new GameObject("PathAButton");
+            pathAGO.transform.SetParent(branchGO.transform, false);
+            var paRect = pathAGO.AddComponent<RectTransform>();
+            paRect.anchoredPosition = new Vector2(-180, 0);
+            paRect.sizeDelta = new Vector2(260, 240);
+            var paImg = pathAGO.AddComponent<Image>();
+            paImg.color = new Color(0.2f, 0.15f, 0.25f, 0.95f);
+            var paBtn = pathAGO.AddComponent<Button>();
+
+            var paTextGO = new GameObject("Title");
+            paTextGO.transform.SetParent(pathAGO.transform, false);
+            var patRect = paTextGO.AddComponent<RectTransform>();
+            patRect.anchoredPosition = new Vector2(0, 50);
+            patRect.sizeDelta = new Vector2(240, 40);
+            var paTitle = paTextGO.AddComponent<TextMeshProUGUI>();
+            paTitle.text = "⚔️ 전투방";
+            paTitle.fontSize = 22;
+            paTitle.fontStyle = FontStyles.Bold;
+            paTitle.alignment = TextAlignmentOptions.Center;
+            paTitle.color = new Color(1f, 0.8f, 0.2f);
+
+            var paDescGO = new GameObject("Desc");
+            paDescGO.transform.SetParent(pathAGO.transform, false);
+            var padRect = paDescGO.AddComponent<RectTransform>();
+            padRect.anchoredPosition = new Vector2(0, -30);
+            padRect.sizeDelta = new Vector2(240, 80);
+            var paDesc = paDescGO.AddComponent<TextMeshProUGUI>();
+            paDesc.text = "몬스터를 처치하고\n골드와 경험치를 획득합니다.";
+            paDesc.fontSize = 16;
+            paDesc.alignment = TextAlignmentOptions.Center;
+            paDesc.color = Color.white;
+
+            // Path B Button
+            var pathBGO = new GameObject("PathBButton");
+            pathBGO.transform.SetParent(branchGO.transform, false);
+            var pbRect = pathBGO.AddComponent<RectTransform>();
+            pbRect.anchoredPosition = new Vector2(180, 0);
+            pbRect.sizeDelta = new Vector2(260, 240);
+            var pbImg = pathBGO.AddComponent<Image>();
+            pbImg.color = new Color(0.15f, 0.25f, 0.2f, 0.95f);
+            var pbBtn = pathBGO.AddComponent<Button>();
+
+            var pbTextGO = new GameObject("Title");
+            pbTextGO.transform.SetParent(pathBGO.transform, false);
+            var pbtRect = pbTextGO.AddComponent<RectTransform>();
+            pbtRect.anchoredPosition = new Vector2(0, 50);
+            pbtRect.sizeDelta = new Vector2(240, 40);
+            var pbTitle = pbTextGO.AddComponent<TextMeshProUGUI>();
+            pbTitle.text = "❤️ 휴식방";
+            pbTitle.fontSize = 22;
+            pbTitle.fontStyle = FontStyles.Bold;
+            pbTitle.alignment = TextAlignmentOptions.Center;
+            pbTitle.color = new Color(0.3f, 0.9f, 0.4f);
+
+            var pbDescGO = new GameObject("Desc");
+            pbDescGO.transform.SetParent(pathBGO.transform, false);
+            var pbdRect = pbDescGO.AddComponent<RectTransform>();
+            pbdRect.anchoredPosition = new Vector2(0, -30);
+            pbdRect.sizeDelta = new Vector2(240, 80);
+            var pbDesc = pbDescGO.AddComponent<TextMeshProUGUI>();
+            pbDesc.text = "모닥불 가에서 체력을 회복하거나\n낚시를 즐깁니다.";
+            pbDesc.fontSize = 16;
+            pbDesc.alignment = TextAlignmentOptions.Center;
+            pbDesc.color = Color.white;
+
+            var branchScreen = branchGO.AddComponent<BranchSelectionScreen>();
+            typeof(BranchSelectionScreen).GetField("pathAButton", System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Instance)?.SetValue(branchScreen, paBtn);
+            typeof(BranchSelectionScreen).GetField("pathATitle", System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Instance)?.SetValue(branchScreen, paTitle);
+            typeof(BranchSelectionScreen).GetField("pathADesc", System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Instance)?.SetValue(branchScreen, paDesc);
+            typeof(BranchSelectionScreen).GetField("pathBButton", System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Instance)?.SetValue(branchScreen, pbBtn);
+            typeof(BranchSelectionScreen).GetField("pathBTitle", System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Instance)?.SetValue(branchScreen, pbTitle);
+            typeof(BranchSelectionScreen).GetField("pathBDesc", System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Instance)?.SetValue(branchScreen, pbDesc);
+            typeof(ScreenBase).GetField("screenType", System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Instance)?.SetValue(branchScreen, ScreenType.BranchSelection);
+            EditorUtility.SetDirty(branchScreen);
             branchGO.SetActive(false);
 
+            // --- 8. RestRoomScreen UI ---
             var restGO = new GameObject("RestRoomScreen");
             restGO.transform.SetParent(canvasGO.transform, false);
-            restGO.AddComponent<RestRoomScreen>();
+            var rstRect = restGO.AddComponent<RectTransform>();
+            rstRect.anchorMin = Vector2.zero;
+            rstRect.anchorMax = Vector2.one;
+            rstRect.sizeDelta = Vector2.zero;
+            var rstBg = restGO.AddComponent<Image>();
+            rstBg.color = new Color(0.05f, 0.08f, 0.05f, 0.95f);
+
+            var rstTitleGO = new GameObject("Title");
+            rstTitleGO.transform.SetParent(restGO.transform, false);
+            var rsttRect = rstTitleGO.AddComponent<RectTransform>();
+            rsttRect.anchoredPosition = new Vector2(0, 180);
+            rsttRect.sizeDelta = new Vector2(400, 60);
+            var rstTitle = rstTitleGO.AddComponent<TextMeshProUGUI>();
+            rstTitle.text = "🔥 따스한 모닥불 휴식방";
+            rstTitle.fontSize = 32;
+            rstTitle.fontStyle = FontStyles.Bold;
+            rstTitle.alignment = TextAlignmentOptions.Center;
+            rstTitle.color = new Color(1f, 0.7f, 0.2f);
+
+            var rstStatusGO = new GameObject("StatusMessage");
+            rstStatusGO.transform.SetParent(restGO.transform, false);
+            var rstsRect = rstStatusGO.AddComponent<RectTransform>();
+            rstsRect.anchoredPosition = new Vector2(0, 110);
+            rstsRect.sizeDelta = new Vector2(500, 50);
+            var rstStatus = rstStatusGO.AddComponent<TextMeshProUGUI>();
+            rstStatus.text = "모닥불 가에서 지친 몸을 달랩니다. 무엇을 하시겠습니까?";
+            rstStatus.fontSize = 18;
+            rstStatus.alignment = TextAlignmentOptions.Center;
+            rstStatus.color = Color.white;
+
+            // Rest Heal Button
+            var healBtnGO = new GameObject("RestHealButton");
+            healBtnGO.transform.SetParent(restGO.transform, false);
+            var hbtnRect = healBtnGO.AddComponent<RectTransform>();
+            hbtnRect.anchoredPosition = new Vector2(-150, 0);
+            hbtnRect.sizeDelta = new Vector2(200, 80);
+            var hbtnImg = healBtnGO.AddComponent<Image>();
+            hbtnImg.color = new Color(0.2f, 0.6f, 0.3f);
+            var healBtn = healBtnGO.AddComponent<Button>();
+            var hbtTextGO = new GameObject("Text");
+            hbtTextGO.transform.SetParent(healBtnGO.transform, false);
+            var hbtRect = hbtTextGO.AddComponent<RectTransform>();
+            hbtRect.anchorMin = Vector2.zero;
+            hbtRect.anchorMax = Vector2.one;
+            hbtRect.sizeDelta = Vector2.zero;
+            var hbt = hbtTextGO.AddComponent<TextMeshProUGUI>();
+            hbt.text = "❤️ 휴식 취하기\n(체력 45% 회복)";
+            hbt.fontSize = 16;
+            hbt.alignment = TextAlignmentOptions.Center;
+
+            // Fishing Button
+            var fishBtnGO = new GameObject("FishingButton");
+            fishBtnGO.transform.SetParent(restGO.transform, false);
+            var fbtnRect = fishBtnGO.AddComponent<RectTransform>();
+            fbtnRect.anchoredPosition = new Vector2(150, 0);
+            fbtnRect.sizeDelta = new Vector2(200, 80);
+            var fbtnImg = fishBtnGO.AddComponent<Image>();
+            fbtnImg.color = new Color(0.2f, 0.45f, 0.7f);
+            var fishBtn = fishBtnGO.AddComponent<Button>();
+            var fbtTextGO = new GameObject("Text");
+            fbtTextGO.transform.SetParent(fishBtnGO.transform, false);
+            var fbtRect = fbtTextGO.AddComponent<RectTransform>();
+            fbtRect.anchorMin = Vector2.zero;
+            fbtRect.anchorMax = Vector2.one;
+            fbtRect.sizeDelta = Vector2.zero;
+            var fbt = fbtTextGO.AddComponent<TextMeshProUGUI>();
+            fbt.text = "🎣 모닥불 낚시\n(식량 및 체력 회복)";
+            fbt.fontSize = 16;
+            fbt.alignment = TextAlignmentOptions.Center;
+
+            // Rest Leave Button
+            var rstLeaveGO = new GameObject("LeaveButton");
+            rstLeaveGO.transform.SetParent(restGO.transform, false);
+            var rstlRect = rstLeaveGO.AddComponent<RectTransform>();
+            rstlRect.anchoredPosition = new Vector2(0, -120);
+            rstlRect.sizeDelta = new Vector2(220, 50);
+            var rstlImg = rstLeaveGO.AddComponent<Image>();
+            rstlImg.color = new Color(0.35f, 0.35f, 0.4f);
+            var rstLeaveBtn = rstLeaveGO.AddComponent<Button>();
+            var rstlTextGO = new GameObject("Text");
+            rstlTextGO.transform.SetParent(rstLeaveGO.transform, false);
+            var rstltRect = rstlTextGO.AddComponent<RectTransform>();
+            rstltRect.anchorMin = Vector2.zero;
+            rstltRect.anchorMax = Vector2.one;
+            rstltRect.sizeDelta = Vector2.zero;
+            var rstlt = rstlTextGO.AddComponent<TextMeshProUGUI>();
+            rstlt.text = "다음 방으로 이동 ➡️";
+            rstlt.fontSize = 18;
+            rstlt.alignment = TextAlignmentOptions.Center;
+
+            var restScreen = restGO.AddComponent<RestRoomScreen>();
+            typeof(RestRoomScreen).GetField("statusMessageText", System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Instance)?.SetValue(restScreen, rstStatus);
+            typeof(RestRoomScreen).GetField("restHealButton", System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Instance)?.SetValue(restScreen, healBtn);
+            typeof(RestRoomScreen).GetField("fishingButton", System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Instance)?.SetValue(restScreen, fishBtn);
+            typeof(RestRoomScreen).GetField("leaveButton", System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Instance)?.SetValue(restScreen, rstLeaveBtn);
+            typeof(ScreenBase).GetField("screenType", System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Instance)?.SetValue(restScreen, ScreenType.RestRoom);
+            EditorUtility.SetDirty(restScreen);
             restGO.SetActive(false);
 
+            // --- 9. DungeonShopScreen UI ---
             var shopGO = new GameObject("DungeonShopScreen");
             shopGO.transform.SetParent(canvasGO.transform, false);
-            shopGO.AddComponent<DungeonShopScreen>();
+            var shRect = shopGO.AddComponent<RectTransform>();
+            shRect.anchorMin = Vector2.zero;
+            shRect.anchorMax = Vector2.one;
+            shRect.sizeDelta = Vector2.zero;
+            var shBg = shopGO.AddComponent<Image>();
+            shBg.color = new Color(0.08f, 0.05f, 0.04f, 0.95f);
+
+            var shTitleGO = new GameObject("Title");
+            shTitleGO.transform.SetParent(shopGO.transform, false);
+            var shtRect = shTitleGO.AddComponent<RectTransform>();
+            shtRect.anchoredPosition = new Vector2(0, 180);
+            shtRect.sizeDelta = new Vector2(400, 60);
+            var shTitle = shTitleGO.AddComponent<TextMeshProUGUI>();
+            shTitle.text = "🛒 방랑 상인 골디의 상점";
+            shTitle.fontSize = 32;
+            shTitle.fontStyle = FontStyles.Bold;
+            shTitle.alignment = TextAlignmentOptions.Center;
+            shTitle.color = new Color(1f, 0.85f, 0.2f);
+
+            var shMsgGO = new GameObject("MerchantDialog");
+            shMsgGO.transform.SetParent(shopGO.transform, false);
+            var shmRect = shMsgGO.AddComponent<RectTransform>();
+            shmRect.anchoredPosition = new Vector2(0, 120);
+            shmRect.sizeDelta = new Vector2(500, 40);
+            var shMsg = shMsgGO.AddComponent<TextMeshProUGUI>();
+            shMsg.text = "\"어서 오시오, 폐하! 특별한 물건들이 준비되어 있습니다.\"";
+            shMsg.fontSize = 18;
+            shMsg.alignment = TextAlignmentOptions.Center;
+            shMsg.color = Color.white;
+
+            // Potion Button
+            var potBtnGO = new GameObject("PotionBuyButton");
+            potBtnGO.transform.SetParent(shopGO.transform, false);
+            var potRect = potBtnGO.AddComponent<RectTransform>();
+            potRect.anchoredPosition = new Vector2(-150, 10);
+            potRect.sizeDelta = new Vector2(180, 100);
+            var potImg = potBtnGO.AddComponent<Image>();
+            potImg.color = new Color(0.6f, 0.2f, 0.2f);
+            var potBtn = potBtnGO.AddComponent<Button>();
+            var ptxtGO = new GameObject("Text");
+            ptxtGO.transform.SetParent(potBtnGO.transform, false);
+            var ptxtRect = ptxtGO.AddComponent<RectTransform>();
+            ptxtRect.anchorMin = Vector2.zero;
+            ptxtRect.anchorMax = Vector2.one;
+            ptxtRect.sizeDelta = Vector2.zero;
+            var ptxt = ptxtGO.AddComponent<TextMeshProUGUI>();
+            ptxt.text = "🧪 회복 물약\n체력 50% 회복\n(35 G)";
+            ptxt.fontSize = 15;
+            ptxt.alignment = TextAlignmentOptions.Center;
+
+            // Atk Buff Button
+            var atkBtnGO = new GameObject("AtkBuffBuyButton");
+            atkBtnGO.transform.SetParent(shopGO.transform, false);
+            var abRect = atkBtnGO.AddComponent<RectTransform>();
+            abRect.anchoredPosition = new Vector2(150, 10);
+            abRect.sizeDelta = new Vector2(180, 100);
+            var abImg = atkBtnGO.AddComponent<Image>();
+            abImg.color = new Color(0.6f, 0.45f, 0.1f);
+            var abBtn = atkBtnGO.AddComponent<Button>();
+            var abtxtGO = new GameObject("Text");
+            abtxtGO.transform.SetParent(atkBtnGO.transform, false);
+            var abtxtRect = abtxtGO.AddComponent<RectTransform>();
+            abtxtRect.anchorMin = Vector2.zero;
+            abtxtRect.anchorMax = Vector2.one;
+            abtxtRect.sizeDelta = Vector2.zero;
+            var abtxt = abtxtGO.AddComponent<TextMeshProUGUI>();
+            abtxt.text = "⚔️ 날카로운 숫돌\n공격력 +20%\n(60 G)";
+            abtxt.fontSize = 15;
+            abtxt.alignment = TextAlignmentOptions.Center;
+
+            // Shop Leave Button
+            var shLeaveGO = new GameObject("ShopLeaveButton");
+            shLeaveGO.transform.SetParent(shopGO.transform, false);
+            var shlRect = shLeaveGO.AddComponent<RectTransform>();
+            shlRect.anchoredPosition = new Vector2(0, -120);
+            shlRect.sizeDelta = new Vector2(220, 50);
+            var shlImg = shLeaveGO.AddComponent<Image>();
+            shlImg.color = new Color(0.35f, 0.35f, 0.4f);
+            var shLeaveBtn = shLeaveGO.AddComponent<Button>();
+            var shltTextGO = new GameObject("Text");
+            shltTextGO.transform.SetParent(shLeaveGO.transform, false);
+            var shltRect = shltTextGO.AddComponent<RectTransform>();
+            shltRect.anchorMin = Vector2.zero;
+            shltRect.anchorMax = Vector2.one;
+            shltRect.sizeDelta = Vector2.zero;
+            var shlt = shltTextGO.AddComponent<TextMeshProUGUI>();
+            shlt.text = "상점 나가기 ➡️";
+            shlt.fontSize = 18;
+            shlt.alignment = TextAlignmentOptions.Center;
+
+            var shopScreen = shopGO.AddComponent<DungeonShopScreen>();
+            typeof(DungeonShopScreen).GetField("merchantText", System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Instance)?.SetValue(shopScreen, shMsg);
+            typeof(DungeonShopScreen).GetField("potionBuyButton", System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Instance)?.SetValue(shopScreen, potBtn);
+            typeof(DungeonShopScreen).GetField("atkBuffBuyButton", System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Instance)?.SetValue(shopScreen, abBtn);
+            typeof(DungeonShopScreen).GetField("leaveButton", System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Instance)?.SetValue(shopScreen, shLeaveBtn);
+            typeof(ScreenBase).GetField("screenType", System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Instance)?.SetValue(shopScreen, ScreenType.DungeonShop);
+            EditorUtility.SetDirty(shopScreen);
             shopGO.SetActive(false);
 
+            // --- 10. FishingMinigameUI ---
             var fishingGO = new GameObject("FishingMinigameUI");
             fishingGO.transform.SetParent(canvasGO.transform, false);
-            fishingGO.AddComponent<FishingMinigameUI>();
+            var fshRect = fishingGO.AddComponent<RectTransform>();
+            fshRect.anchorMin = Vector2.zero;
+            fshRect.anchorMax = Vector2.one;
+            fshRect.sizeDelta = Vector2.zero;
+            var fshBg = fishingGO.AddComponent<Image>();
+            fshBg.color = new Color(0.04f, 0.08f, 0.12f, 0.95f);
+
+            var fshTitleGO = new GameObject("Title");
+            fshTitleGO.transform.SetParent(fishingGO.transform, false);
+            var fshtRect = fshTitleGO.AddComponent<RectTransform>();
+            fshtRect.anchoredPosition = new Vector2(0, 160);
+            fshtRect.sizeDelta = new Vector2(400, 50);
+            var fsht = fshTitleGO.AddComponent<TextMeshProUGUI>();
+            fsht.text = "🎣 모닥불 강가 낚시";
+            fsht.fontSize = 30;
+            fsht.alignment = TextAlignmentOptions.Center;
+            fsht.color = new Color(0.3f, 0.85f, 1f);
+
+            var tensionBarGO = new GameObject("TensionBar");
+            tensionBarGO.transform.SetParent(fishingGO.transform, false);
+            var tbRect = tensionBarGO.AddComponent<RectTransform>();
+            tbRect.anchoredPosition = new Vector2(0, 30);
+            tbRect.sizeDelta = new Vector2(400, 40);
+            var tbImg = tensionBarGO.AddComponent<Image>();
+            tbImg.color = new Color(0.15f, 0.2f, 0.25f);
+
+            var greenZoneGO = new GameObject("GreenZone");
+            greenZoneGO.transform.SetParent(tensionBarGO.transform, false);
+            var gzRect = greenZoneGO.AddComponent<RectTransform>();
+            gzRect.anchoredPosition = Vector2.zero;
+            gzRect.sizeDelta = new Vector2(90, 40);
+            var gzImg = greenZoneGO.AddComponent<Image>();
+            gzImg.color = new Color(0.2f, 0.8f, 0.35f, 0.8f);
+
+            var cursorGO = new GameObject("Cursor");
+            cursorGO.transform.SetParent(tensionBarGO.transform, false);
+            var curRect = cursorGO.AddComponent<RectTransform>();
+            curRect.anchoredPosition = Vector2.zero;
+            curRect.sizeDelta = new Vector2(16, 50);
+            var curImg = cursorGO.AddComponent<Image>();
+            curImg.color = Color.yellow;
+
+            var fshStatusGO = new GameObject("StatusText");
+            fshStatusGO.transform.SetParent(fishingGO.transform, false);
+            var fshsRect = fshStatusGO.AddComponent<RectTransform>();
+            fshsRect.anchoredPosition = new Vector2(0, -30);
+            fshsRect.sizeDelta = new Vector2(400, 40);
+            var fshStatus = fshStatusGO.AddComponent<TextMeshProUGUI>();
+            fshStatus.text = "초록색 영역에 커서가 올 때 [낚아채기]를 누르세요!";
+            fshStatus.fontSize = 18;
+            fshStatus.alignment = TextAlignmentOptions.Center;
+            fshStatus.color = Color.white;
+
+            var tapBtnGO = new GameObject("TapButton");
+            tapBtnGO.transform.SetParent(fishingGO.transform, false);
+            var tapRect = tapBtnGO.AddComponent<RectTransform>();
+            tapRect.anchoredPosition = new Vector2(0, -100);
+            tapRect.sizeDelta = new Vector2(200, 50);
+            var tapImg = tapBtnGO.AddComponent<Image>();
+            tapImg.color = new Color(0.2f, 0.65f, 0.9f);
+            var tapBtn = tapBtnGO.AddComponent<Button>();
+            var tapTxtGO = new GameObject("Text");
+            tapTxtGO.transform.SetParent(tapBtnGO.transform, false);
+            var ttRect = tapTxtGO.AddComponent<RectTransform>();
+            ttRect.anchorMin = Vector2.zero;
+            ttRect.anchorMax = Vector2.one;
+            ttRect.sizeDelta = Vector2.zero;
+            var tt = tapTxtGO.AddComponent<TextMeshProUGUI>();
+            tt.text = "🎣 낚아채기!";
+            tt.fontSize = 20;
+            tt.alignment = TextAlignmentOptions.Center;
+
+            var fishingUI = fishingGO.AddComponent<FishingMinigameUI>();
+            typeof(FishingMinigameUI).GetField("tensionBar", System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Instance)?.SetValue(fishingUI, tbRect);
+            typeof(FishingMinigameUI).GetField("greenZone", System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Instance)?.SetValue(fishingUI, gzRect);
+            typeof(FishingMinigameUI).GetField("cursor", System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Instance)?.SetValue(fishingUI, curRect);
+            typeof(FishingMinigameUI).GetField("tapButton", System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Instance)?.SetValue(fishingUI, tapBtn);
+            typeof(FishingMinigameUI).GetField("statusText", System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Instance)?.SetValue(fishingUI, fshStatus);
+            typeof(ScreenBase).GetField("screenType", System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Instance)?.SetValue(fishingUI, ScreenType.FishingMinigame);
+            EditorUtility.SetDirty(fishingUI);
             fishingGO.SetActive(false);
 
+            // --- 11. RelicPopupUI ---
             var relicGO = new GameObject("RelicPopupUI");
             relicGO.transform.SetParent(canvasGO.transform, false);
-            relicGO.AddComponent<RelicPopupUI>();
+            var relRect = relicGO.AddComponent<RectTransform>();
+            relRect.anchorMin = Vector2.zero;
+            relRect.anchorMax = Vector2.one;
+            relRect.sizeDelta = Vector2.zero;
+            var relBg = relicGO.AddComponent<Image>();
+            relBg.color = new Color(0.08f, 0.05f, 0.1f, 0.95f);
+
+            var relTitleGO = new GameObject("Title");
+            relTitleGO.transform.SetParent(relicGO.transform, false);
+            var reltRect = relTitleGO.AddComponent<RectTransform>();
+            reltRect.anchoredPosition = new Vector2(0, 160);
+            reltRect.sizeDelta = new Vector2(400, 50);
+            var relt = relTitleGO.AddComponent<TextMeshProUGUI>();
+            relt.text = "👑 고대 유물 발견";
+            relt.fontSize = 32;
+            relt.alignment = TextAlignmentOptions.Center;
+            relt.color = new Color(1f, 0.85f, 0.2f);
+
+            var relDescGO = new GameObject("EffectsText");
+            relDescGO.transform.SetParent(relicGO.transform, false);
+            var reldRect = relDescGO.AddComponent<RectTransform>();
+            reldRect.anchoredPosition = new Vector2(0, 50);
+            reldRect.sizeDelta = new Vector2(400, 80);
+            var reld = relDescGO.AddComponent<TextMeshProUGUI>();
+            reld.text = "황금 왕관 유물\n<color=#2ecc71>공격력 +20% 증가</color>";
+            reld.fontSize = 20;
+            reld.alignment = TextAlignmentOptions.Center;
+
+            var takeBtnGO = new GameObject("TakeButton");
+            takeBtnGO.transform.SetParent(relicGO.transform, false);
+            var tbtnRect = takeBtnGO.AddComponent<RectTransform>();
+            tbtnRect.anchoredPosition = new Vector2(-100, -80);
+            tbtnRect.sizeDelta = new Vector2(160, 50);
+            var tbtnImg = takeBtnGO.AddComponent<Image>();
+            tbtnImg.color = new Color(0.2f, 0.6f, 0.3f);
+            var takeBtn = takeBtnGO.AddComponent<Button>();
+            var tbtTextGO = new GameObject("Text");
+            tbtTextGO.transform.SetParent(takeBtnGO.transform, false);
+            var tbttRect = tbtTextGO.AddComponent<RectTransform>();
+            tbttRect.anchorMin = Vector2.zero;
+            tbttRect.anchorMax = Vector2.one;
+            tbttRect.sizeDelta = Vector2.zero;
+            var tbtt = tbtTextGO.AddComponent<TextMeshProUGUI>();
+            tbtt.text = "유물 획득";
+            tbtt.fontSize = 18;
+            tbtt.alignment = TextAlignmentOptions.Center;
+
+            var skipBtnGO = new GameObject("SkipButton");
+            skipBtnGO.transform.SetParent(relicGO.transform, false);
+            var sbtnRect = skipBtnGO.AddComponent<RectTransform>();
+            sbtnRect.anchoredPosition = new Vector2(100, -80);
+            sbtnRect.sizeDelta = new Vector2(160, 50);
+            var sbtnImg = skipBtnGO.AddComponent<Image>();
+            sbtnImg.color = new Color(0.4f, 0.4f, 0.45f);
+            var skipBtn = skipBtnGO.AddComponent<Button>();
+            var sbtTextGO = new GameObject("Text");
+            sbtTextGO.transform.SetParent(skipBtnGO.transform, false);
+            var sbttRect = sbtTextGO.AddComponent<RectTransform>();
+            sbttRect.anchorMin = Vector2.zero;
+            sbttRect.anchorMax = Vector2.one;
+            sbttRect.sizeDelta = Vector2.zero;
+            var sbtt = sbtTextGO.AddComponent<TextMeshProUGUI>();
+            sbtt.text = "포기하기";
+            sbtt.fontSize = 18;
+            sbtt.alignment = TextAlignmentOptions.Center;
+
+            var relicUI = relicGO.AddComponent<RelicPopupUI>();
+            typeof(RelicPopupUI).GetField("effectsText", System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Instance)?.SetValue(relicUI, reld);
+            typeof(RelicPopupUI).GetField("takeButton", System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Instance)?.SetValue(relicUI, takeBtn);
+            typeof(RelicPopupUI).GetField("skipButton", System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Instance)?.SetValue(relicUI, skipBtn);
+            typeof(ScreenBase).GetField("screenType", System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Instance)?.SetValue(relicUI, ScreenType.RelicPopup);
+            EditorUtility.SetDirty(relicUI);
             relicGO.SetActive(false);
 
             // Place Player in scene

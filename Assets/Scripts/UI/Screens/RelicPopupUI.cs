@@ -53,16 +53,27 @@ namespace MiniKingdom.UI
 
         private void OnTakeClicked()
         {
-            // 유물 획득 처리 (Process taking the relic)
-            Debug.Log("Relic Taken!");
-            UIManager.Instance.CloseCurrent();
+            var player = FindAnyObjectByType<MiniKingdom.Player.PlayerStats>();
+            if (player != null)
+            {
+                player.AddModifier(new MiniKingdom.Data.StatModifier
+                {
+                    statType = MiniKingdom.Data.StatType.ATK,
+                    value = 0.2f,
+                    isPercentage = true
+                });
+            }
+
+            MiniKingdom.UI.PopupManager.Instance?.ShowToast("👑 희귀 유물을 획득했습니다! (공격력 +20%)");
+
+            if (UIManager.Instance != null) UIManager.Instance.CloseCurrent();
+            else gameObject.SetActive(false);
         }
 
         private void OnSkipClicked()
         {
-            // 유물 포기 처리 (Process skipping the relic)
-            Debug.Log("Relic Skipped.");
-            UIManager.Instance.CloseCurrent();
+            if (UIManager.Instance != null) UIManager.Instance.CloseCurrent();
+            else gameObject.SetActive(false);
         }
     }
 }

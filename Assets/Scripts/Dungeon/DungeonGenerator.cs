@@ -46,18 +46,22 @@ namespace MiniKingdom.Dungeon
                 }
                 else
                 {
-                    // Weighted random based on data
                     nextRoom.Type = GetRandomRoomType();
-
-                    // 30% chance for branch path
-                    if (Random.value < 0.3f)
-                    {
-                        nextRoom.IsBranch = true;
-                        nextRoom.NextB = new RoomConfig { Type = GetRandomRoomType(), Difficulty = i };
-                    }
                 }
 
                 current.NextA = nextRoom;
+
+                // 40% chance for branch choice from previous room
+                if (i > 1 && i < roomCount - 1 && Random.value < 0.4f)
+                {
+                    current.IsBranch = true;
+                    // Provide alternate flavor (e.g. if A is Combat, B can be Rest/Shop/Treasure)
+                    RoomType altType = (nextRoom.Type == RoomType.Combat) 
+                        ? (Random.value > 0.5f ? RoomType.Rest : RoomType.Shop)
+                        : RoomType.Combat;
+                    current.NextB = new RoomConfig { Type = altType, Difficulty = i, NextA = nextRoom.NextA };
+                }
+
                 current = nextRoom;
             }
 

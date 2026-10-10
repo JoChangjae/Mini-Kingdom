@@ -56,13 +56,17 @@ namespace MiniKingdom.UI
 
         private void OnChoosePathA()
         {
-            UIManager.Instance.CloseCurrent();
+            if (UIManager.Instance != null) UIManager.Instance.CloseCurrent();
+            else gameObject.SetActive(false);
+
             DungeonRunManager.Instance?.MoveToNextRoom(false);
         }
 
         private void OnChoosePathB()
         {
-            UIManager.Instance.CloseCurrent();
+            if (UIManager.Instance != null) UIManager.Instance.CloseCurrent();
+            else gameObject.SetActive(false);
+
             DungeonRunManager.Instance?.MoveToNextRoom(true);
         }
 

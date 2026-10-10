@@ -140,8 +140,18 @@ namespace MiniKingdom.UI
 
         private void OnLeaveClicked()
         {
-            UIManager.Instance?.CloseCurrent();
-            EventBus.Publish(new RoomClearedEvent(0));
+            if (UIManager.Instance != null) UIManager.Instance.CloseCurrent();
+            else gameObject.SetActive(false);
+
+            var roomMgr = FindAnyObjectByType<MiniKingdom.Dungeon.RoomManager>();
+            if (roomMgr != null)
+            {
+                EventBus.Publish(new RoomClearedEvent(0));
+            }
+            else
+            {
+                MiniKingdom.Dungeon.DungeonRunManager.Instance?.MoveToNextRoom(false);
+            }
         }
     }
 }

@@ -122,7 +122,8 @@ namespace MiniKingdom.UI
 
         private void CloseFishing()
         {
-            UIManager.Instance.CloseCurrent();
+            if (UIManager.Instance != null) UIManager.Instance.CloseCurrent();
+            else gameObject.SetActive(false);
         }
     }
 }
