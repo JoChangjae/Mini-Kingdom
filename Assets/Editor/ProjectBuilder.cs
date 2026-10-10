@@ -77,10 +77,7 @@ namespace MiniKingdom.Editor
             EditorBuildSettings.scenes = buildScenes.ToArray();
             Debug.Log("✅ Build Settings에 3개 씬 등록 완료 (MainMenu, Kingdom, Dungeon)");
 
-            // 5. 한글 폰트 설정
-            SetupKoreanFont();
-
-            // 6. 기본으로 Kingdom 씬 열기
+            // 5. 기본으로 Kingdom 씬 열기
             EditorSceneManager.OpenScene("Assets/Scenes/Kingdom.unity");
 
             AssetDatabase.SaveAssets();
@@ -91,115 +88,16 @@ namespace MiniKingdom.Editor
         [MenuItem("Mini Kingdom/🏰 왕국 씬 다시 생성 (Fix Kingdom Scene)", false, 11)]
         public static void RebuildKingdomScene()
         {
-            SetupKoreanFont();
             CreateKingdomScene();
             AssetDatabase.SaveAssets();
             AssetDatabase.Refresh();
-            Debug.Log("🎉 Kingdom 씬 재생성 완료 (Dungeon 출정 버튼 연결 완료)");
+            Debug.Log("🎉 Kingdom 씬 재생성 완료 (건물 카드 및 강화 시스템 연동 완료)");
         }
 
-        [MenuItem("Mini Kingdom/🔤 3. 한글 폰트(TMP Font Asset) 자동 생성 및 등록", false, 3)]
+        [MenuItem("Mini Kingdom/🔤 3. 한글 폰트(TMP Font Asset) 안내", false, 3)]
         public static void SetupKoreanFont()
         {
-            Debug.Log("한글 폰트(Malgun Gothic) 자동 설정을 시작합니다...");
-            string fontPath = "Assets/Fonts/MalgunGothic.ttf";
-            string assetPath = "Assets/Fonts/MalgunGothic SDF.asset";
-
-            if (!File.Exists(fontPath))
-            {
-                EnsureFolder("Assets/Fonts");
-                if (File.Exists("C:/Windows/Fonts/malgun.ttf"))
-                {
-                    File.Copy("C:/Windows/Fonts/malgun.ttf", fontPath, true);
-                    AssetDatabase.Refresh();
-                }
-            }
-
-            var font = AssetDatabase.LoadAssetAtPath<Font>(fontPath);
-            if (font == null)
-            {
-                Debug.LogWarning("Windows Malgun Gothic 폰트를 찾을 수 없습니다.");
-                return;
-            }
-
-            var fontAsset = AssetDatabase.LoadAssetAtPath<TMP_FontAsset>(assetPath);
-            if (fontAsset == null || fontAsset.material == null || fontAsset.atlasTextures == null || fontAsset.atlasTextures.Length == 0 || fontAsset.atlasTextures[0] == null)
-            {
-                if (File.Exists(assetPath))
-                {
-                    AssetDatabase.DeleteAsset(assetPath);
-                }
-
-                FontEngine.InitializeFontEngine();
-                if (FontEngine.LoadFontFace(font, 90, 0, out FontFaceHandle faceHandle) == FontEngineError.Success)
-                {
-                    fontAsset = ScriptableObject.CreateInstance<TMP_FontAsset>();
-                    AssetDatabase.CreateAsset(fontAsset, assetPath);
-
-                    fontAsset.version = "1.1.0";
-                    fontAsset.faceInfo = FontEngine.GetFaceInfo(faceHandle);
-                    fontAsset.sourceFontFile = font;
-                    fontAsset.m_SourceFontFileGUID = AssetDatabase.AssetPathToGUID(fontPath);
-                    fontAsset.m_SourceFontFile_EditorRef = font;
-                    fontAsset.atlasPopulationMode = AtlasPopulationMode.Dynamic;
-                    fontAsset.clearDynamicDataOnBuild = true;
-
-                    fontAsset.atlasTextures = new Texture2D[1];
-                    int atlasWidth = fontAsset.atlasWidth = 1024;
-                    int atlasHeight = fontAsset.atlasHeight = 1024;
-                    int atlasPadding = fontAsset.atlasPadding = 9;
-
-                    Texture2D texture = new Texture2D(1, 1, TextureFormat.Alpha8, false);
-                    texture.name = "MalgunGothic Atlas";
-                    Shader shader = Shader.Find("TextMeshPro/Distance Field");
-                    Material mat = new Material(shader);
-                    mat.name = "MalgunGothic Material";
-
-                    int packingModifier = 1;
-                    mat.SetFloat(ShaderUtilities.ID_GradientScale, atlasPadding + packingModifier);
-                    mat.SetFloat(ShaderUtilities.ID_WeightNormal, fontAsset.normalStyle);
-                    mat.SetFloat(ShaderUtilities.ID_WeightBold, fontAsset.boldStyle);
-
-                    fontAsset.atlasTextures[0] = texture;
-                    AssetDatabase.AddObjectToAsset(texture, fontAsset);
-
-                    fontAsset.freeGlyphRects = new List<GlyphRect>() { new GlyphRect(0, 0, atlasWidth - packingModifier, atlasHeight - packingModifier) };
-                    fontAsset.usedGlyphRects = new List<GlyphRect>();
-
-                    mat.SetTexture(ShaderUtilities.ID_MainTex, texture);
-                    mat.SetFloat(ShaderUtilities.ID_TextureWidth, atlasWidth);
-                    mat.SetFloat(ShaderUtilities.ID_TextureHeight, atlasHeight);
-
-                    fontAsset.material = mat;
-                    AssetDatabase.AddObjectToAsset(mat, fontAsset);
-
-                    fontAsset.creationSettings = new FontAssetCreationSettings(fontAsset.m_SourceFontFileGUID, (int)fontAsset.faceInfo.pointSize, 0, atlasPadding, 0, 1024, 1024, 7, string.Empty, (int)GlyphRenderMode.SDFAA);
-
-                    EditorUtility.SetDirty(fontAsset);
-                    AssetDatabase.SaveAssets();
-                    Debug.Log("✅ Dynamic MalgunGothic SDF 폰트 에셋 (Texture/Material 서브에셋 정상 포함) 생성 완료!");
-                }
-            }
-
-            // TMP Settings에 Fallback 폰트로 등록 (Default Font는 변경하지 않고 유지)
-            var tmpSettings = Resources.Load<TMP_Settings>("TMP Settings");
-            if (tmpSettings != null && fontAsset != null)
-            {
-                var fallbackField = typeof(TMP_Settings).GetField("m_fallbackFontAssets", System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Instance);
-                if (fallbackField != null)
-                {
-                    var list = (List<TMP_FontAsset>)fallbackField.GetValue(tmpSettings);
-                    if (list == null) list = new List<TMP_FontAsset>();
-                    if (!list.Contains(fontAsset))
-                    {
-                        list.Add(fontAsset);
-                        fallbackField.SetValue(tmpSettings, list);
-                        EditorUtility.SetDirty(tmpSettings);
-                        AssetDatabase.SaveAssets();
-                    }
-                }
-                Debug.Log("✅ TMP Settings에 MalgunGothic SDF Fallback 폰트로 등록 완료!");
-            }
+            Debug.Log("ℹ️ TMP Settings가 안정적인 기본 폰트로 설정되어 있습니다.");
         }
 
         [MenuItem("Mini Kingdom/📦 2. 기본 데이터 에셋(.asset) 일괄 생성", false, 2)]
@@ -340,12 +238,32 @@ namespace MiniKingdom.Editor
             blacksmith.category = BuildingCategory.Military;
             blacksmith.maxLevel = 5;
             blacksmith.unlockKingdomLevel = 1;
+            blacksmith.BuffModifiers = new List<StatModifier> {
+                new StatModifier { statType = MiniKingdom.Data.StatType.ATK, value = 5f, isPercentage = false, source = ModifierSource.Building }
+            };
             blacksmith.levelData = new[] {
-                new BuildingLevelData { buildTime = 5f, kingdomEffect = "시작 무기: 일반 등급" },
-                new BuildingLevelData { buildTime = 15f, kingdomEffect = "시작 무기: 고급 등급" },
-                new BuildingLevelData { buildTime = 30f, kingdomEffect = "시작 무기: 희귀 등급" }
+                new BuildingLevelData { buildTime = 5f, kingdomEffect = "플레이어 공격력 +5" },
+                new BuildingLevelData { buildTime = 15f, kingdomEffect = "플레이어 공격력 +10" },
+                new BuildingLevelData { buildTime = 30f, kingdomEffect = "플레이어 공격력 +15" }
             };
             EditorUtility.SetDirty(blacksmith);
+
+            var barracks = CreateOrLoadAsset<BuildingData>("Assets/Data/Buildings/Building_Barracks.asset");
+            barracks.buildingId = "building_barracks";
+            barracks.buildingName = "훈련소";
+            barracks.description = "기초 체력과 방어력을 훈련하여 던전 생존력을 영구 강화합니다.";
+            barracks.category = BuildingCategory.Military;
+            barracks.maxLevel = 5;
+            barracks.unlockKingdomLevel = 1;
+            barracks.BuffModifiers = new List<StatModifier> {
+                new StatModifier { statType = MiniKingdom.Data.StatType.HP, value = 25f, isPercentage = false, source = ModifierSource.Building },
+                new StatModifier { statType = MiniKingdom.Data.StatType.DEF, value = 2f, isPercentage = false, source = ModifierSource.Building }
+            };
+            barracks.levelData = new[] {
+                new BuildingLevelData { buildTime = 5f, kingdomEffect = "체력 +25, 방어력 +2" },
+                new BuildingLevelData { buildTime = 15f, kingdomEffect = "체력 +50, 방어력 +4" }
+            };
+            EditorUtility.SetDirty(barracks);
 
             var magicTower = CreateOrLoadAsset<BuildingData>("Assets/Data/Buildings/Building_MagicTower.asset");
             magicTower.buildingId = "building_magic_tower";
@@ -354,9 +272,12 @@ namespace MiniKingdom.Editor
             magicTower.category = BuildingCategory.Magic;
             magicTower.maxLevel = 5;
             magicTower.unlockKingdomLevel = 1;
+            magicTower.BuffModifiers = new List<StatModifier> {
+                new StatModifier { statType = MiniKingdom.Data.StatType.SPD, value = 0.10f, isPercentage = true, source = ModifierSource.Building }
+            };
             magicTower.levelData = new[] {
-                new BuildingLevelData { buildTime = 8f, kingdomEffect = "마법 스킬 슬롯 1개 해금" },
-                new BuildingLevelData { buildTime = 20f, kingdomEffect = "마법 스킬 슬롯 2개 해금" }
+                new BuildingLevelData { buildTime = 8f, kingdomEffect = "공격 속도 +10%" },
+                new BuildingLevelData { buildTime = 20f, kingdomEffect = "공격 속도 +20%" }
             };
             EditorUtility.SetDirty(magicTower);
 
@@ -367,8 +288,11 @@ namespace MiniKingdom.Editor
             farm.category = BuildingCategory.Production;
             farm.maxLevel = 5;
             farm.unlockKingdomLevel = 1;
+            farm.BuffModifiers = new List<StatModifier> {
+                new StatModifier { statType = MiniKingdom.Data.StatType.HP, value = 15f, isPercentage = false, source = ModifierSource.Building }
+            };
             farm.levelData = new[] {
-                new BuildingLevelData { buildTime = 5f, kingdomEffect = "던전 입장 시 HP +20 버프" }
+                new BuildingLevelData { buildTime = 5f, kingdomEffect = "던전 입장 시 HP +15 버프" }
             };
             EditorUtility.SetDirty(farm);
 
@@ -647,26 +571,81 @@ namespace MiniKingdom.Editor
             var titleText = titleGO.AddComponent<TextMeshProUGUI>();
             titleText.text = "미니 왕국 중앙 광장";
             titleText.fontSize = 36;
+            titleText.fontStyle = FontStyles.Bold;
             titleText.alignment = TextAlignmentOptions.Center;
+            titleText.raycastTarget = false;
             var titleRect = titleGO.GetComponent<RectTransform>();
-            titleRect.anchoredPosition = new Vector2(0, 180);
-            titleRect.sizeDelta = new Vector2(500, 60);
+            titleRect.anchoredPosition = new Vector2(0, 360);
+            titleRect.sizeDelta = new Vector2(600, 50);
+
+            // Level & Resource Summary Text
+            GameObject resSummaryGO = new GameObject("ResourceSummary");
+            resSummaryGO.transform.SetParent(canvasGO.transform, false);
+            var resSummaryText = resSummaryGO.AddComponent<TextMeshProUGUI>();
+            resSummaryText.text = "왕국 레벨: Lv. 1  |  골드: 1,000  |  목재: 200  |  석재: 100";
+            resSummaryText.fontSize = 18;
+            resSummaryText.color = new Color(1f, 0.95f, 0.65f);
+            resSummaryText.alignment = TextAlignmentOptions.Center;
+            resSummaryText.raycastTarget = false;
+            var resRect = resSummaryGO.GetComponent<RectTransform>();
+            resRect.anchoredPosition = new Vector2(0, 310);
+            resRect.sizeDelta = new Vector2(600, 35);
+
+            // Wire KingdomScreen fields
+            var fieldLvl = typeof(KingdomScreen).GetField("kingdomLevelText", System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Instance);
+            if (fieldLvl != null) fieldLvl.SetValue(kingdomScreen, resSummaryText);
+
+            var fieldRes = typeof(KingdomScreen).GetField("resourceSummaryText", System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Instance);
+            if (fieldRes != null) fieldRes.SetValue(kingdomScreen, resSummaryText);
+
+            // Create 4 Core Building Cards
+            var cardsList = new List<BuildingCardUI>();
+            cardsList.Add(CreateBuildingCard(canvasGO.transform, "building_blacksmith", "대장간 (Blacksmith)", "영구 공격력(ATK) +5 증가", new Vector2(0, 220)));
+            cardsList.Add(CreateBuildingCard(canvasGO.transform, "building_barracks", "훈련소 (Barracks)", "영구 최대체력 +25, 방어력 +2 증가", new Vector2(0, 135)));
+            cardsList.Add(CreateBuildingCard(canvasGO.transform, "building_magic_tower", "마법탑 (Magic Tower)", "영구 공격속도 +10% 증가", new Vector2(0, 50)));
+            cardsList.Add(CreateBuildingCard(canvasGO.transform, "building_farm", "농장 (Farm)", "영구 최대체력 +15 증가 & 세금 수입 상승", new Vector2(0, -35)));
+
+            var fieldCards = typeof(KingdomScreen).GetField("buildingCards", System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Instance);
+            if (fieldCards != null) fieldCards.SetValue(kingdomScreen, cardsList);
+
+            // Treasury / Tax Button
+            GameObject treasuryBtnGO = new GameObject("TreasuryButton");
+            treasuryBtnGO.transform.SetParent(canvasGO.transform, false);
+            var treasuryImg = treasuryBtnGO.AddComponent<Image>();
+            treasuryImg.color = new Color(0.85f, 0.62f, 0.18f);
+            var treasuryBtn = treasuryBtnGO.AddComponent<Button>();
+            var treasuryRect = treasuryBtnGO.GetComponent<RectTransform>();
+            treasuryRect.anchoredPosition = new Vector2(0, -135);
+            treasuryRect.sizeDelta = new Vector2(360, 50);
+
+            GameObject tTextGO = new GameObject("Text");
+            tTextGO.transform.SetParent(treasuryBtnGO.transform, false);
+            var tText = tTextGO.AddComponent<TextMeshProUGUI>();
+            tText.text = "일일 세금 징수 (Collect Taxes)";
+            tText.fontSize = 20;
+            tText.alignment = TextAlignmentOptions.Center;
+            tText.raycastTarget = false;
+
+            UnityEditor.Events.UnityEventTools.AddPersistentListener(treasuryBtn.onClick, kingdomScreen.OnTreasuryClicked);
+            var fieldTreasury = typeof(KingdomScreen).GetField("treasuryButton", System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Instance);
+            if (fieldTreasury != null) fieldTreasury.SetValue(kingdomScreen, treasuryBtn);
 
             // Explore / Dungeon Go Button
             GameObject goDungeonBtnGO = new GameObject("ExploreButton");
             goDungeonBtnGO.transform.SetParent(canvasGO.transform, false);
             var goDungeonImg = goDungeonBtnGO.AddComponent<Image>();
-            goDungeonImg.color = new Color(0.85f, 0.3f, 0.25f);
+            goDungeonImg.color = new Color(0.85f, 0.28f, 0.22f);
             var goDungeonBtn = goDungeonBtnGO.AddComponent<Button>();
             var goDungeonRect = goDungeonBtnGO.GetComponent<RectTransform>();
-            goDungeonRect.anchoredPosition = new Vector2(0, -60);
-            goDungeonRect.sizeDelta = new Vector2(300, 75);
+            goDungeonRect.anchoredPosition = new Vector2(0, -215);
+            goDungeonRect.sizeDelta = new Vector2(360, 65);
 
             GameObject dTextGO = new GameObject("Text");
             dTextGO.transform.SetParent(goDungeonBtnGO.transform, false);
             var dText = dTextGO.AddComponent<TextMeshProUGUI>();
             dText.text = "던전 출정하기 (Dungeon)";
             dText.fontSize = 22;
+            dText.fontStyle = FontStyles.Bold;
             dText.alignment = TextAlignmentOptions.Center;
             dText.raycastTarget = false;
 
@@ -674,14 +653,95 @@ namespace MiniKingdom.Editor
             var kingdomCtrl = goDungeonBtnGO.AddComponent<KingdomSceneController>();
             UnityEditor.Events.UnityEventTools.AddPersistentListener(goDungeonBtn.onClick, kingdomCtrl.OnClickDepartDungeon);
 
-            // Wire up explore tab button
+            // Wire up explore tab button in kingdomScreen
             var fieldExplore = typeof(KingdomScreen).GetField("exploreTabBtn", System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Instance);
             if (fieldExplore != null) fieldExplore.SetValue(kingdomScreen, goDungeonBtn);
+
+            EditorUtility.SetDirty(kingdomScreen);
 
             InstantiateGameCoreInScene();
 
             EditorSceneManager.SaveScene(scene, scenePath);
             Debug.Log("✅ Kingdom 씬 생성 완료");
+        }
+
+        private static BuildingCardUI CreateBuildingCard(Transform parent, string buildingId, string initialName, string initialEffect, Vector2 pos)
+        {
+            GameObject cardGO = new GameObject($"Card_{buildingId}");
+            cardGO.transform.SetParent(parent, false);
+
+            var cardImg = cardGO.AddComponent<Image>();
+            cardImg.color = new Color(0.12f, 0.15f, 0.22f, 0.95f);
+
+            var rect = cardGO.GetComponent<RectTransform>();
+            rect.anchoredPosition = pos;
+            rect.sizeDelta = new Vector2(520, 74);
+
+            var cardUI = cardGO.AddComponent<BuildingCardUI>();
+
+            // Title Text
+            GameObject titleGO = new GameObject("TitleText");
+            titleGO.transform.SetParent(cardGO.transform, false);
+            var titleText = titleGO.AddComponent<TextMeshProUGUI>();
+            titleText.text = $"{initialName}  Lv. 1";
+            titleText.fontSize = 18;
+            titleText.fontStyle = FontStyles.Bold;
+            titleText.alignment = TextAlignmentOptions.Left;
+            titleText.raycastTarget = false;
+            var tRect = titleGO.GetComponent<RectTransform>();
+            tRect.anchoredPosition = new Vector2(-90, 16);
+            tRect.sizeDelta = new Vector2(300, 28);
+
+            // Effect Text
+            GameObject effectGO = new GameObject("EffectText");
+            effectGO.transform.SetParent(cardGO.transform, false);
+            var effectText = effectGO.AddComponent<TextMeshProUGUI>();
+            effectText.text = initialEffect;
+            effectText.fontSize = 13;
+            effectText.color = new Color(0.75f, 0.9f, 0.85f);
+            effectText.alignment = TextAlignmentOptions.Left;
+            effectText.raycastTarget = false;
+            var eRect = effectGO.GetComponent<RectTransform>();
+            eRect.anchoredPosition = new Vector2(-40, -16);
+            eRect.sizeDelta = new Vector2(400, 24);
+
+            // Cost Text
+            GameObject costGO = new GameObject("CostText");
+            costGO.transform.SetParent(cardGO.transform, false);
+            var costText = costGO.AddComponent<TextMeshProUGUI>();
+            costText.text = "비용: 골드 100";
+            costText.fontSize = 13;
+            costText.color = new Color(1f, 0.85f, 0.4f);
+            costText.alignment = TextAlignmentOptions.Right;
+            costText.raycastTarget = false;
+            var cRect = costGO.GetComponent<RectTransform>();
+            cRect.anchoredPosition = new Vector2(45, 16);
+            cRect.sizeDelta = new Vector2(170, 28);
+
+            // Upgrade Button
+            GameObject btnGO = new GameObject("UpgradeBtn");
+            btnGO.transform.SetParent(cardGO.transform, false);
+            var btnImg = btnGO.AddComponent<Image>();
+            btnImg.color = new Color(0.2f, 0.55f, 0.75f);
+            var btn = btnGO.AddComponent<Button>();
+            var bRect = btnGO.GetComponent<RectTransform>();
+            bRect.anchoredPosition = new Vector2(205, 0);
+            bRect.sizeDelta = new Vector2(85, 48);
+
+            GameObject btnTxtGO = new GameObject("Text");
+            btnTxtGO.transform.SetParent(btnGO.transform, false);
+            var btnTxt = btnTxtGO.AddComponent<TextMeshProUGUI>();
+            btnTxt.text = "강화";
+            btnTxt.fontSize = 17;
+            btnTxt.alignment = TextAlignmentOptions.Center;
+            btnTxt.raycastTarget = false;
+
+            UnityEditor.Events.UnityEventTools.AddPersistentListener(btn.onClick, cardUI.OnClickUpgrade);
+
+            cardUI.SetReferences(buildingId, titleText, effectText, costText, btn, btnTxt);
+            EditorUtility.SetDirty(cardUI);
+
+            return cardUI;
         }
 
         private static void CreateDungeonScene()

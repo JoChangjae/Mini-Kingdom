@@ -7,17 +7,49 @@ using MiniKingdom.Utils;
 namespace MiniKingdom.Kingdom
 {
     /// <summary>
-    /// Singleton managing all kingdom resources.
+    /// Singleton managing all kingdom resources with automatic persistence and starting balances.
     /// </summary>
     public class ResourceManager : Singleton<ResourceManager>
     {
         private Dictionary<ResourceType, int> _resources = new Dictionary<ResourceType, int>();
+
+        private void Start()
+        {
+            LoadResources();
+        }
+
+        private void LoadResources()
+        {
+            var saved = SaveManager.LoadInventory();
+            if (saved != null && saved.Resources != null && saved.Resources.Count > 0)
+            {
+                foreach (var entry in saved.Resources)
+                {
+                    _resources[entry.Type] = entry.Amount;
+                }
+            }
+
+            // New game initial resource grants
+            if (GetResource(ResourceType.Gold) == 0 && GetResource(ResourceType.Wood) == 0 && GetResource(ResourceType.Stone) == 0)
+            {
+                _resources[ResourceType.Gold] = 1000;
+                _resources[ResourceType.Wood] = 200;
+                _resources[ResourceType.Stone] = 100;
+                SaveResources();
+            }
+        }
+
+        private void SaveResources()
+        {
+            SaveManager.SaveInventory(_resources, null);
+        }
 
         public void AddResource(ResourceType type, int amount)
         {
             if (_resources.ContainsKey(type)) _resources[type] += amount;
             else _resources[type] = amount;
             
+            SaveResources();
             EventBus.Publish(new ResourceChangedEvent(type, _resources[type]));
         }
 
@@ -26,6 +58,7 @@ namespace MiniKingdom.Kingdom
             if (HasResource(type, amount))
             {
                 _resources[type] -= amount;
+                SaveResources();
                 EventBus.Publish(new ResourceChangedEvent(type, _resources[type]));
                 return true;
             }
@@ -46,10 +79,9 @@ namespace MiniKingdom.Kingdom
 
         public int GetAmount(ResourceType type) => GetResource(type);
 
-        // 건물의 자원 생산 (시간 기반)
         public void ProcessProduction()
         {
-            // 주기적으로 호출되어 건물의 생산량 추가
+            // Passive production logic if needed
         }
     }
 }

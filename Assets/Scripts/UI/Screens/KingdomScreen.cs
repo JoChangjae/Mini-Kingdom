@@ -1,6 +1,7 @@
 using UnityEngine;
 using UnityEngine.UI;
 using UnityEngine.SceneManagement;
+using System.Collections.Generic;
 using TMPro;
 using MiniKingdom.Kingdom;
 using MiniKingdom.Core; // Assuming EventBus is here
@@ -39,6 +40,8 @@ namespace MiniKingdom.UI.Screens
         [SerializeField] private TextMeshProUGUI activeDecreeText;
         [SerializeField] private GameObject defenseCountdownPanel;
         [SerializeField] private TextMeshProUGUI defenseCountdownText;
+        [SerializeField] private TextMeshProUGUI resourceSummaryText;
+        [SerializeField] private List<BuildingCardUI> buildingCards = new List<BuildingCardUI>();
 
         private bool _isTransitioning = false;
 
@@ -74,8 +77,14 @@ namespace MiniKingdom.UI.Screens
                 treasuryButton.onClick.AddListener(OnTreasuryClicked);
             }
             
-            // 날씨 이벤트 구독 (Subscribe to weather events)
+            // 이벤트 구독 (Resource & Building & Weather)
+            EventBus.Subscribe<ResourceChangedEvent>(OnResourceChanged);
             EventBus.Subscribe<WeatherChangedEvent>(OnWeatherChanged);
+            if (BuildingManager.Instance != null)
+            {
+                BuildingManager.Instance.OnBuildingsUpdated -= UpdateKingdomUI;
+                BuildingManager.Instance.OnBuildingsUpdated += UpdateKingdomUI;
+            }
             
             // 오프라인 골드 임시 생성 (Generate fake offline gold for testing)
             _pendingGold = Random.Range(100, 500);
@@ -90,7 +99,17 @@ namespace MiniKingdom.UI.Screens
             if (buildTabBtn != null) buildTabBtn.onClick.RemoveAllListeners();
             if (treasuryButton != null) treasuryButton.onClick.RemoveAllListeners();
             
+            EventBus.Unsubscribe<ResourceChangedEvent>(OnResourceChanged);
             EventBus.Unsubscribe<WeatherChangedEvent>(OnWeatherChanged);
+            if (BuildingManager.Instance != null)
+            {
+                BuildingManager.Instance.OnBuildingsUpdated -= UpdateKingdomUI;
+            }
+        }
+
+        private void OnResourceChanged(ResourceChangedEvent e)
+        {
+            UpdateKingdomUI();
         }
 
         protected override void OnScreenUpdate()
@@ -102,27 +121,45 @@ namespace MiniKingdom.UI.Screens
         {
             if (ResourceManager.Instance != null)
             {
-                if (goldBar != null) goldBar.SetAmount(ResourceManager.Instance.GetResource(Data.ResourceType.Gold));
-                if (woodBar != null) woodBar.SetAmount(ResourceManager.Instance.GetResource(Data.ResourceType.Wood));
-                if (stoneBar != null) stoneBar.SetAmount(ResourceManager.Instance.GetResource(Data.ResourceType.Stone));
+                int gold = ResourceManager.Instance.GetResource(Data.ResourceType.Gold);
+                int wood = ResourceManager.Instance.GetResource(Data.ResourceType.Wood);
+                int stone = ResourceManager.Instance.GetResource(Data.ResourceType.Stone);
+
+                if (goldBar != null) goldBar.SetAmount(gold);
+                if (woodBar != null) woodBar.SetAmount(wood);
+                if (stoneBar != null) stoneBar.SetAmount(stone);
+
+                if (resourceSummaryText != null)
+                {
+                    resourceSummaryText.text = $"골드: {gold:N0}  |  목재: {wood:N0}  |  석재: {stone:N0}";
+                }
             }
             else
             {
-                if (goldBar != null) goldBar.SetAmount(1500);
-                if (woodBar != null) woodBar.SetAmount(300);
-                if (stoneBar != null) stoneBar.SetAmount(150);
+                if (goldBar != null) goldBar.SetAmount(1000);
+                if (woodBar != null) woodBar.SetAmount(200);
+                if (stoneBar != null) stoneBar.SetAmount(100);
+                if (resourceSummaryText != null) resourceSummaryText.text = "골드: 1,000  |  목재: 200  |  석재: 100";
             }
 
-            if (BuildingManager.Instance != null && kingdomLevelText != null)
+            if (BuildingManager.Instance != null)
             {
-                int lvl = Mathf.Max(1, BuildingManager.Instance.GetTotalKingdomLevel());
-                kingdomLevelText.text = $"Lv. {lvl}";
+                int lvl = BuildingManager.Instance.GetTotalKingdomLevel();
+                if (kingdomLevelText != null) kingdomLevelText.text = $"왕국 레벨: Lv. {lvl}";
             }
             else if (kingdomLevelText != null)
             {
-                kingdomLevelText.text = "Lv. 1";
+                kingdomLevelText.text = "왕국 레벨: Lv. 1";
             }
             
+            if (buildingCards != null)
+            {
+                foreach (var card in buildingCards)
+                {
+                    if (card != null) card.Refresh();
+                }
+            }
+
             if (dailyBonusBadge != null) dailyBonusBadge.SetActive(true);
             if (activeDecreeText != null) activeDecreeText.text = "풍년: 골드 획득 +10%";
         }
@@ -133,18 +170,23 @@ namespace MiniKingdom.UI.Screens
                 pendingGoldText.text = _pendingGold > 0 ? $"+{_pendingGold} Gold" : "No Taxes";
         }
 
-        private void OnTreasuryClicked()
+        public void OnTreasuryClicked()
         {
             if (_pendingGold > 0)
             {
                 // 세금 징수 (Collect taxes)
-                PopupManager.Instance?.ShowToast($"+{_pendingGold} 골드 획득!");
-                ResourceManager.Instance?.AddResource(Data.ResourceType.Gold, _pendingGold);
-                SaveManager.Instance?.SaveGame();
-
+                int collected = _pendingGold;
                 _pendingGold = 0;
+                ResourceManager.Instance?.AddResource(Data.ResourceType.Gold, collected);
+                SaveManager.Instance?.SaveGame();
+                PopupManager.Instance?.ShowToast($"💰 세금 징수 완료! +{collected} 골드 획득!");
+
                 UpdateTreasuryUI();
                 UpdateKingdomUI();
+            }
+            else
+            {
+                PopupManager.Instance?.ShowToast("현재 징수할 세금이 없습니다. 던전을 탐험하면 세금이 누적됩니다!");
             }
         }
         

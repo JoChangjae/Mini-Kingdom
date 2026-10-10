@@ -46,8 +46,34 @@ namespace MiniKingdom.Data
         // Bridge properties for compatibility with PlayerStats and BuildingManager
         public MiniKingdom.Player.StatType Type
         {
-            get => (MiniKingdom.Player.StatType)(int)statType;
-            set => statType = (StatType)(int)value;
+            get => statType switch
+            {
+                StatType.HP => MiniKingdom.Player.StatType.MaxHP,
+                StatType.ATK => MiniKingdom.Player.StatType.ATK,
+                StatType.DEF => MiniKingdom.Player.StatType.DEF,
+                StatType.SPD => MiniKingdom.Player.StatType.SPD,
+                StatType.CRT => MiniKingdom.Player.StatType.CRT,
+                StatType.CDMG => MiniKingdom.Player.StatType.CDMG,
+                StatType.MOV => MiniKingdom.Player.StatType.MOV,
+                StatType.EVD => MiniKingdom.Player.StatType.EVD,
+                _ => MiniKingdom.Player.StatType.ATK
+            };
+            set
+            {
+                statType = value switch
+                {
+                    MiniKingdom.Player.StatType.HP => StatType.HP,
+                    MiniKingdom.Player.StatType.MaxHP => StatType.HP,
+                    MiniKingdom.Player.StatType.ATK => StatType.ATK,
+                    MiniKingdom.Player.StatType.DEF => StatType.DEF,
+                    MiniKingdom.Player.StatType.SPD => StatType.SPD,
+                    MiniKingdom.Player.StatType.CRT => StatType.CRT,
+                    MiniKingdom.Player.StatType.CDMG => StatType.CDMG,
+                    MiniKingdom.Player.StatType.MOV => StatType.MOV,
+                    MiniKingdom.Player.StatType.EVD => StatType.EVD,
+                    _ => StatType.ATK
+                };
+            }
         }
         public float Value
         {

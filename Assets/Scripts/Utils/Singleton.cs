@@ -39,8 +39,11 @@ namespace MiniKingdom.Utils
                             _instance = singleton.AddComponent<T>();
                             singleton.name = "(singleton) " + typeof(T).ToString();
                             
-                            // 씬 전환 시 파괴되지 않도록 설정
-                            DontDestroyOnLoad(singleton);
+                            // 씬 전환 시 파괴되지 않도록 설정 (플레이 모드에서만 실행)
+                            if (Application.isPlaying)
+                            {
+                                DontDestroyOnLoad(singleton);
+                            }
                         }
                     }
 
@@ -54,7 +57,10 @@ namespace MiniKingdom.Utils
             if (_instance == null)
             {
                 _instance = this as T;
-                DontDestroyOnLoad(gameObject);
+                if (Application.isPlaying)
+                {
+                    DontDestroyOnLoad(gameObject);
+                }
             }
             else if (_instance != this)
             {

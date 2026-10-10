@@ -45,6 +45,10 @@ namespace MiniKingdom.Player
             if (_modifiers.ContainsKey(mod.Type))
             {
                 _modifiers[mod.Type].Add(mod);
+                if (mod.Type == StatType.MaxHP)
+                {
+                    _currentHP = CalculateFinalStat(StatType.MaxHP);
+                }
                 OnStatsChanged?.Invoke();
             }
         }
