@@ -112,7 +112,6 @@ namespace MiniKingdom.UI
             if (_instantiatedScreens.TryGetValue(screenType, out var screen))
             {
                 screen.Hide();
-                screen.gameObject.SetActive(false);
             }
         }
 

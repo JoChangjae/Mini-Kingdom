@@ -88,6 +88,11 @@ namespace MiniKingdom.UI
 
         protected override void OnScreenUpdate()
         {
+            if (_playerStats == null)
+            {
+                _playerStats = FindObjectOfType<PlayerStats>();
+            }
+
             if (_playerStats != null && hpBar != null)
             {
                 float maxHp = _playerStats.CalculateFinalStat(StatType.MaxHP);

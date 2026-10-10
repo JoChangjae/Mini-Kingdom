@@ -178,6 +178,11 @@ namespace MiniKingdom.UI.Screens
                         DecreeType.WarriorDay => "⚔️ 전사의 날 (공격력 +20%)",
                         DecreeType.MerchantDay => "💰 상인의 날 (골드 1.5배)",
                         DecreeType.WoodDay => "🌲 목재의 날 (목재 2배)",
+                        DecreeType.ScholarDay => "📖 학자의 날 (경험치 +30%)",
+                        DecreeType.BuilderDay => "🔨 건축의 날 (건설비 -20%)",
+                        DecreeType.HealerDay => "❤️ 치유의 날 (최대체력 +25%)",
+                        DecreeType.ExplorerDay => "🗺️ 탐험의 날 (이속/회피 +15%)",
+                        DecreeType.FortuneDay => "🍀 행운의 날 (치명타 +15%)",
                         _ => "👑 왕실 칙령 발령 중"
                     };
                     activeDecreeText.text = decreeName;

@@ -129,6 +129,8 @@ namespace MiniKingdom.UI
         private void OnCardSelected(int index)
         {
             _isTimerActive = false;
+            Time.timeScale = 1f; // Always resume game time immediately
+            
             if (LevelUpSystem.Instance != null)
             {
                 LevelUpSystem.Instance.ApplyUpgradeByIndex(index);
@@ -140,7 +142,7 @@ namespace MiniKingdom.UI
             }
             else
             {
-                gameObject.SetActive(false);
+                Hide();
             }
         }
 

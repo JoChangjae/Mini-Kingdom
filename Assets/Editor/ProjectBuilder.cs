@@ -1006,7 +1006,10 @@ namespace MiniKingdom.Editor
             GameObject canvasGO = new GameObject("Canvas");
             var canvas = canvasGO.AddComponent<Canvas>();
             canvas.renderMode = RenderMode.ScreenSpaceOverlay;
-            canvasGO.AddComponent<CanvasScaler>();
+            var scaler = canvasGO.AddComponent<CanvasScaler>();
+            scaler.uiScaleMode = CanvasScaler.ScaleMode.ScaleWithScreenSize;
+            scaler.referenceResolution = new Vector2(1080, 1920);
+            scaler.matchWidthOrHeight = 0.5f;
             canvasGO.AddComponent<GraphicRaycaster>();
 
             GameObject esGO = new GameObject("EventSystem");
@@ -1016,6 +1019,7 @@ namespace MiniKingdom.Editor
             var kingdomScreenGO = new GameObject("KingdomScreen");
             kingdomScreenGO.transform.SetParent(canvasGO.transform, false);
             var kingdomScreen = kingdomScreenGO.AddComponent<KingdomScreen>();
+            typeof(ScreenBase).GetField("screenType", System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Instance)?.SetValue(kingdomScreen, ScreenType.Kingdom);
 
             // Title
             GameObject titleGO = new GameObject("KingdomTitle");
@@ -1354,19 +1358,29 @@ namespace MiniKingdom.Editor
             GameObject canvasGO = new GameObject("DungeonCanvas");
             var canvas = canvasGO.AddComponent<Canvas>();
             canvas.renderMode = RenderMode.ScreenSpaceOverlay;
-            canvasGO.AddComponent<CanvasScaler>();
+            var dScaler = canvasGO.AddComponent<CanvasScaler>();
+            dScaler.uiScaleMode = CanvasScaler.ScaleMode.ScaleWithScreenSize;
+            dScaler.referenceResolution = new Vector2(1080, 1920);
+            dScaler.matchWidthOrHeight = 0.5f;
             canvasGO.AddComponent<GraphicRaycaster>();
 
             var hudGO = new GameObject("DungeonHUD");
             hudGO.transform.SetParent(canvasGO.transform, false);
+            var hudRect = hudGO.AddComponent<RectTransform>();
+            hudRect.anchorMin = Vector2.zero;
+            hudRect.anchorMax = Vector2.one;
+            hudRect.sizeDelta = Vector2.zero;
             var hudScreen = hudGO.AddComponent<DungeonHUDScreen>();
 
-            // 1. Player HP Bar (Top Left)
+            // 1. Player HP Bar (Top Left: 30, -50 from top-left)
             GameObject playerHpGO = new GameObject("PlayerHpBar");
             playerHpGO.transform.SetParent(hudGO.transform, false);
             var hpRect = playerHpGO.AddComponent<RectTransform>();
-            hpRect.anchoredPosition = new Vector2(-220, 350);
-            hpRect.sizeDelta = new Vector2(240, 26);
+            hpRect.anchorMin = new Vector2(0f, 1f);
+            hpRect.anchorMax = new Vector2(0f, 1f);
+            hpRect.pivot = new Vector2(0f, 1f);
+            hpRect.anchoredPosition = new Vector2(40f, -40f);
+            hpRect.sizeDelta = new Vector2(280f, 32f);
             var hpSlider = playerHpGO.AddComponent<Slider>();
             hpSlider.minValue = 0f;
             hpSlider.maxValue = 1f;
@@ -1487,6 +1501,7 @@ namespace MiniKingdom.Editor
             typeof(DungeonHUDScreen).GetField("perfectDodgeFlash", System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Instance)?.SetValue(hudScreen, flashImg);
             typeof(DungeonHUDScreen).GetField("comboPanel", System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Instance)?.SetValue(hudScreen, comboPanelGO);
             typeof(DungeonHUDScreen).GetField("comboText", System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Instance)?.SetValue(hudScreen, comboText);
+            typeof(ScreenBase).GetField("screenType", System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Instance)?.SetValue(hudScreen, ScreenType.InDungeon_HUD);
 
             EditorUtility.SetDirty(hudScreen);
 
