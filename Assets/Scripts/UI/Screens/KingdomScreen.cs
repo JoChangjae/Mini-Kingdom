@@ -37,6 +37,7 @@ namespace MiniKingdom.UI.Screens
 
         [Header("Indicators")]
         [SerializeField] private GameObject dailyBonusBadge;
+        [SerializeField] private Button decreeButton;
         [SerializeField] private TextMeshProUGUI activeDecreeText;
         [SerializeField] private GameObject defenseCountdownPanel;
         [SerializeField] private TextMeshProUGUI defenseCountdownText;
@@ -75,6 +76,11 @@ namespace MiniKingdom.UI.Screens
             {
                 treasuryButton.onClick.RemoveListener(OnTreasuryClicked);
                 treasuryButton.onClick.AddListener(OnTreasuryClicked);
+            }
+            if (decreeButton != null)
+            {
+                decreeButton.onClick.RemoveListener(OnDecreeClicked);
+                decreeButton.onClick.AddListener(OnDecreeClicked);
             }
             
             // 이벤트 구독 (Resource & Building & Weather)
@@ -161,7 +167,26 @@ namespace MiniKingdom.UI.Screens
             }
 
             if (dailyBonusBadge != null) dailyBonusBadge.SetActive(true);
-            if (activeDecreeText != null) activeDecreeText.text = "풍년: 골드 획득 +10%";
+
+            var decreeSys = FindAnyObjectByType<RoyalDecreeSystem>();
+            if (activeDecreeText != null)
+            {
+                if (decreeSys != null && decreeSys.ActiveDecree != DecreeType.None)
+                {
+                    string decreeName = decreeSys.ActiveDecree switch
+                    {
+                        DecreeType.WarriorDay => "⚔️ 전사의 날 (공격력 +20%)",
+                        DecreeType.MerchantDay => "💰 상인의 날 (골드 1.5배)",
+                        DecreeType.WoodDay => "🌲 목재의 날 (목재 2배)",
+                        _ => "👑 왕실 칙령 발령 중"
+                    };
+                    activeDecreeText.text = decreeName;
+                }
+                else
+                {
+                    activeDecreeText.text = "📜 오늘의 칙령을 선포하세요! (클릭)";
+                }
+            }
         }
 
         private void UpdateTreasuryUI()
@@ -234,6 +259,23 @@ namespace MiniKingdom.UI.Screens
         {
             // UIManager.Instance?.Show(ScreenType.BuildingList);
             PopupManager.Instance?.ShowToast("건설 메뉴 오픈!");
+        }
+
+        public void OnDecreeClicked()
+        {
+            if (UIManager.Instance != null)
+            {
+                UIManager.Instance.Show(ScreenType.RoyalDecree);
+            }
+            else
+            {
+                var decreeScreen = FindAnyObjectByType<RoyalDecreeScreen>(FindObjectsInactive.Include);
+                if (decreeScreen != null)
+                {
+                    decreeScreen.gameObject.SetActive(true);
+                    decreeScreen.Show();
+                }
+            }
         }
 
         public void OnBuildingTapped(int buildingId)

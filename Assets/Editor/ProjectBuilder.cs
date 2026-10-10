@@ -946,6 +946,28 @@ namespace MiniKingdom.Editor
             var fieldCards = typeof(KingdomScreen).GetField("buildingCards", System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Instance);
             if (fieldCards != null) fieldCards.SetValue(kingdomScreen, cardsList);
 
+            // Decree Button
+            GameObject decreeBtnGO = new GameObject("DecreeButton");
+            decreeBtnGO.transform.SetParent(canvasGO.transform, false);
+            var decreeImg = decreeBtnGO.AddComponent<Image>();
+            decreeImg.color = new Color(0.28f, 0.22f, 0.45f);
+            var decreeBtn = decreeBtnGO.AddComponent<Button>();
+            var decreeRect = decreeBtnGO.GetComponent<RectTransform>();
+            decreeRect.anchoredPosition = new Vector2(0, -90);
+            decreeRect.sizeDelta = new Vector2(360, 40);
+
+            GameObject decTextGO = new GameObject("Text");
+            decTextGO.transform.SetParent(decreeBtnGO.transform, false);
+            var decText = decTextGO.AddComponent<TextMeshProUGUI>();
+            decText.text = "📜 오늘의 왕실 칙령 선포 (Royal Decree)";
+            decText.fontSize = 17;
+            decText.alignment = TextAlignmentOptions.Center;
+            decText.raycastTarget = false;
+
+            UnityEditor.Events.UnityEventTools.AddPersistentListener(decreeBtn.onClick, kingdomScreen.OnDecreeClicked);
+            typeof(KingdomScreen).GetField("decreeButton", System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Instance)?.SetValue(kingdomScreen, decreeBtn);
+            typeof(KingdomScreen).GetField("activeDecreeText", System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Instance)?.SetValue(kingdomScreen, decText);
+
             // Treasury / Tax Button
             GameObject treasuryBtnGO = new GameObject("TreasuryButton");
             treasuryBtnGO.transform.SetParent(canvasGO.transform, false);
@@ -953,7 +975,7 @@ namespace MiniKingdom.Editor
             treasuryImg.color = new Color(0.85f, 0.62f, 0.18f);
             var treasuryBtn = treasuryBtnGO.AddComponent<Button>();
             var treasuryRect = treasuryBtnGO.GetComponent<RectTransform>();
-            treasuryRect.anchoredPosition = new Vector2(0, -135);
+            treasuryRect.anchoredPosition = new Vector2(0, -145);
             treasuryRect.sizeDelta = new Vector2(360, 50);
 
             GameObject tTextGO = new GameObject("Text");
@@ -975,7 +997,7 @@ namespace MiniKingdom.Editor
             goDungeonImg.color = new Color(0.85f, 0.28f, 0.22f);
             var goDungeonBtn = goDungeonBtnGO.AddComponent<Button>();
             var goDungeonRect = goDungeonBtnGO.GetComponent<RectTransform>();
-            goDungeonRect.anchoredPosition = new Vector2(0, -215);
+            goDungeonRect.anchoredPosition = new Vector2(0, -220);
             goDungeonRect.sizeDelta = new Vector2(360, 65);
 
             GameObject dTextGO = new GameObject("Text");
@@ -994,6 +1016,94 @@ namespace MiniKingdom.Editor
             // Wire up explore tab button in kingdomScreen
             var fieldExplore = typeof(KingdomScreen).GetField("exploreTabBtn", System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Instance);
             if (fieldExplore != null) fieldExplore.SetValue(kingdomScreen, goDungeonBtn);
+
+            // --- RoyalDecreeScreen Overlay in Kingdom ---
+            GameObject decreeOverlayGO = new GameObject("RoyalDecreeScreen");
+            decreeOverlayGO.transform.SetParent(canvasGO.transform, false);
+            var doRect = decreeOverlayGO.AddComponent<RectTransform>();
+            doRect.anchorMin = Vector2.zero;
+            doRect.anchorMax = Vector2.one;
+            doRect.sizeDelta = Vector2.zero;
+            var doBg = decreeOverlayGO.AddComponent<Image>();
+            doBg.color = new Color(0.04f, 0.05f, 0.08f, 0.95f);
+
+            var doTitleGO = new GameObject("Title");
+            doTitleGO.transform.SetParent(decreeOverlayGO.transform, false);
+            var dotRect = doTitleGO.AddComponent<RectTransform>();
+            dotRect.anchoredPosition = new Vector2(0, 180);
+            dotRect.sizeDelta = new Vector2(400, 60);
+            var dotText = doTitleGO.AddComponent<TextMeshProUGUI>();
+            dotText.text = "📜 오늘의 왕실 칙령 선포";
+            dotText.fontSize = 32;
+            dotText.fontStyle = FontStyles.Bold;
+            dotText.alignment = TextAlignmentOptions.Center;
+            dotText.color = new Color(1f, 0.85f, 0.2f);
+
+            // 3 Decree Cards
+            Button[] dCards = new Button[3];
+            TextMeshProUGUI[] dTitles = new TextMeshProUGUI[3];
+            TextMeshProUGUI[] dDescs = new TextMeshProUGUI[3];
+            float[] xOffsets = { -180f, 0f, 180f };
+
+            for (int i = 0; i < 3; i++)
+            {
+                var cardGO = new GameObject($"DecreeCard_{i}");
+                cardGO.transform.SetParent(decreeOverlayGO.transform, false);
+                var cRect = cardGO.AddComponent<RectTransform>();
+                cRect.anchoredPosition = new Vector2(xOffsets[i], 0);
+                cRect.sizeDelta = new Vector2(165, 230);
+                var cImg = cardGO.AddComponent<Image>();
+                cImg.color = new Color(0.12f, 0.15f, 0.22f, 0.95f);
+                dCards[i] = cardGO.AddComponent<Button>();
+
+                var tGO = new GameObject("Title");
+                tGO.transform.SetParent(cardGO.transform, false);
+                var trt = tGO.AddComponent<RectTransform>();
+                trt.anchoredPosition = new Vector2(0, 55);
+                trt.sizeDelta = new Vector2(150, 45);
+                dTitles[i] = tGO.AddComponent<TextMeshProUGUI>();
+                dTitles[i].fontSize = 17;
+                dTitles[i].fontStyle = FontStyles.Bold;
+                dTitles[i].alignment = TextAlignmentOptions.Center;
+                dTitles[i].color = new Color(1f, 0.85f, 0.2f);
+
+                var descGO = new GameObject("Desc");
+                descGO.transform.SetParent(cardGO.transform, false);
+                var drt = descGO.AddComponent<RectTransform>();
+                drt.anchoredPosition = new Vector2(0, -35);
+                drt.sizeDelta = new Vector2(150, 100);
+                dDescs[i] = descGO.AddComponent<TextMeshProUGUI>();
+                dDescs[i].fontSize = 14;
+                dDescs[i].alignment = TextAlignmentOptions.Center;
+                dDescs[i].color = Color.white;
+            }
+
+            // Confirm Button
+            GameObject confBtnGO = new GameObject("ConfirmButton");
+            confBtnGO.transform.SetParent(decreeOverlayGO.transform, false);
+            var cfRect = confBtnGO.AddComponent<RectTransform>();
+            cfRect.anchoredPosition = new Vector2(0, -160);
+            cfRect.sizeDelta = new Vector2(220, 50);
+            var cfImg = confBtnGO.AddComponent<Image>();
+            cfImg.color = new Color(0.2f, 0.55f, 0.8f);
+            var confBtn = confBtnGO.AddComponent<Button>();
+            var cfTextGO = new GameObject("Text");
+            cfTextGO.transform.SetParent(confBtnGO.transform, false);
+            var cftRect = cfTextGO.AddComponent<RectTransform>();
+            cftRect.anchorMin = Vector2.zero;
+            cftRect.anchorMax = Vector2.one;
+            cftRect.sizeDelta = Vector2.zero;
+            var cftText = cfTextGO.AddComponent<TextMeshProUGUI>();
+            cftText.text = "칙령 선포하기";
+            cftText.fontSize = 20;
+            cftText.fontStyle = FontStyles.Bold;
+            cftText.alignment = TextAlignmentOptions.Center;
+
+            var rds = decreeOverlayGO.AddComponent<RoyalDecreeScreen>();
+            rds.SetupDecrees(new[] { Core.DecreeType.WarriorDay, Core.DecreeType.MerchantDay, Core.DecreeType.WoodDay }, dCards, dTitles, dDescs, confBtn);
+            typeof(ScreenBase).GetField("screenType", System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Instance)?.SetValue(rds, ScreenType.RoyalDecree);
+            EditorUtility.SetDirty(rds);
+            decreeOverlayGO.SetActive(false);
 
             EditorUtility.SetDirty(kingdomScreen);
 
