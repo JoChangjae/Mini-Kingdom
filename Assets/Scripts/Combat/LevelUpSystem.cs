@@ -25,9 +25,104 @@ namespace MiniKingdom.Combat
 
         // 런 타임 플레이어 스킬 레벨 추적 (SkillId -> CurrentLevel)
         private Dictionary<string, int> _playerSkillLevels = new Dictionary<string, int>();
+        private Dictionary<string, SkillData> _playerSkills = new Dictionary<string, SkillData>();
         private List<SkillData> _currentChoices = new List<SkillData>();
 
+        // EXP & Level
+        private int _currentLevel = 1;
+        private int _currentExp = 0;
+        private int _requiredExp = 30;
+
+        public int CurrentLevel => _currentLevel;
+        public int CurrentExp => _currentExp;
+        public int RequiredExp => _requiredExp;
         public IReadOnlyList<SkillData> CurrentChoices => _currentChoices;
+
+        public Dictionary<string, SkillData> GetPlayerSkills() => _playerSkills;
+
+        protected override void Awake()
+        {
+            base.Awake();
+            InitializeDefaultSkillsIfEmpty();
+        }
+
+        private void InitializeDefaultSkillsIfEmpty()
+        {
+            if (_availableSkills == null || _availableSkills.Count == 0)
+            {
+                var loaded = Resources.LoadAll<SkillData>("Skills");
+                if (loaded != null && loaded.Length > 0)
+                {
+                    _availableSkills = new List<SkillData>(loaded);
+                }
+#if UNITY_EDITOR
+                if (_availableSkills == null || _availableSkills.Count == 0)
+                {
+                    string[] guids = UnityEditor.AssetDatabase.FindAssets("t:SkillData");
+                    _availableSkills = new List<SkillData>();
+                    foreach (var guid in guids)
+                    {
+                        var path = UnityEditor.AssetDatabase.GUIDToAssetPath(guid);
+                        var s = UnityEditor.AssetDatabase.LoadAssetAtPath<SkillData>(path);
+                        if (s != null) _availableSkills.Add(s);
+                    }
+                }
+#endif
+            }
+
+            // Default fusion recipe: Flame Sword + Whirlwind => Flame Tornado
+            if (_fusionRecipes == null || _fusionRecipes.Count == 0)
+            {
+                var flameTornado = _availableSkills.FirstOrDefault(s => s != null && (s.skillId == "skill_fusion_flame_tornado" || s.isFusion));
+                if (flameTornado != null)
+                {
+                    _fusionRecipes = new List<FusionRecipe>
+                    {
+                        new FusionRecipe
+                        {
+                            RequiredSkill1Id = "skill_flame_sword",
+                            RequiredSkill2Id = "skill_whirlwind",
+                            ResultingSkill = flameTornado
+                        }
+                    };
+                }
+            }
+        }
+
+        public void AddExp(int amount)
+        {
+            _currentExp += amount;
+            Debug.Log($"[LevelUpSystem] EXP 획득: +{amount} ({_currentExp}/{_requiredExp})");
+
+            while (_currentExp >= _requiredExp)
+            {
+                _currentExp -= _requiredExp;
+                _currentLevel++;
+                _requiredExp = Mathf.RoundToInt(_requiredExp * 1.4f);
+                OnLevelUp();
+            }
+        }
+
+        private void OnLevelUp()
+        {
+            Debug.Log($"[LevelUpSystem] 레벨 업! Lv.{_currentLevel}");
+            MiniKingdom.UI.PopupManager.Instance?.ShowToast($"🎉 레벨 업! Lv.{_currentLevel}");
+
+            // Open LevelUpScreen
+            if (MiniKingdom.UI.UIManager.Instance != null)
+            {
+                MiniKingdom.UI.UIManager.Instance.Show(MiniKingdom.UI.ScreenType.LevelUp);
+            }
+            else
+            {
+                var levelUpScreen = FindAnyObjectByType<MiniKingdom.UI.LevelUpScreen>(FindObjectsInactive.Include);
+                if (levelUpScreen != null)
+                {
+                    levelUpScreen.gameObject.SetActive(true);
+                    levelUpScreen.Show();
+                }
+            }
+        }
 
         public void SetAvailableSkills(List<SkillData> skills)
         {
@@ -42,7 +137,11 @@ namespace MiniKingdom.Combat
         public void ResetSkillsForRun()
         {
             _playerSkillLevels.Clear();
+            _playerSkills.Clear();
             _currentChoices.Clear();
+            _currentLevel = 1;
+            _currentExp = 0;
+            _requiredExp = 30;
         }
 
         /// <summary>
@@ -105,6 +204,7 @@ namespace MiniKingdom.Combat
             }
 
             selectedSkill.CurrentLevel = _playerSkillLevels[id];
+            _playerSkills[id] = selectedSkill;
 
             if (selectedSkill.IsFusion)
             {

@@ -393,8 +393,38 @@ namespace MiniKingdom.Editor
             CreateWolfSprite("Assets/Sprites/spr_wolf.png");
             CreateBossTrollSprite("Assets/Sprites/spr_boss_troll.png");
             CreateSlashSprite("Assets/Sprites/spr_slash.png");
+            CreateExpOrbSprite("Assets/Sprites/spr_exp_orb.png");
 
             AssetDatabase.Refresh();
+        }
+
+        private static void CreateExpOrbSprite(string path)
+        {
+            if (File.Exists(path)) return;
+            int size = 32;
+            Texture2D tex = new Texture2D(size, size, TextureFormat.RGBA32, false);
+            Color[] colors = new Color[size * size];
+            for (int i = 0; i < colors.Length; i++) colors[i] = Color.clear;
+
+            Color emerald = new Color(0.15f, 0.95f, 0.45f);
+            Color coreBright = new Color(0.8f, 1f, 0.9f);
+            Color aura = new Color(0.1f, 0.7f, 0.35f, 0.5f);
+
+            Vector2 center = new Vector2(15.5f, 15.5f);
+            for (int y = 0; y < size; y++)
+            {
+                for (int x = 0; x < size; x++)
+                {
+                    float dist = Vector2.Distance(new Vector2(x, y), center);
+                    if (dist <= 4f) colors[y * size + x] = coreBright;
+                    else if (dist <= 8f) colors[y * size + x] = emerald;
+                    else if (dist <= 12f) colors[y * size + x] = aura;
+                }
+            }
+
+            tex.SetPixels(colors);
+            tex.Apply();
+            SaveSpritePNG(tex, path, 32);
         }
 
         private static void SaveSpritePNG(Texture2D tex, string path, int ppu = 32)
@@ -639,10 +669,40 @@ namespace MiniKingdom.Editor
             player.AddComponent<PlayerStats>();
             player.AddComponent<PlayerController>();
             player.AddComponent<PlayerInventory>();
+            player.AddComponent<PlayerSkillController>();
 
             PrefabUtility.SaveAsPrefabAsset(player, path);
             GameObject.DestroyImmediate(player);
             Debug.Log("✅ Player.prefab 생성 완료");
+
+            CreateExpOrbPrefab();
+        }
+
+        private static void CreateExpOrbPrefab()
+        {
+            GenerateGameSprites();
+
+            var orbSprite = AssetDatabase.LoadAssetAtPath<Sprite>("Assets/Sprites/spr_exp_orb.png");
+            string path = "Assets/Prefabs/Entities/ExpOrb.prefab";
+
+            GameObject orb = new GameObject("ExpOrb");
+            var sr = orb.AddComponent<SpriteRenderer>();
+            sr.sprite = orbSprite;
+            sr.sortingOrder = 12;
+
+            var col = orb.AddComponent<CircleCollider2D>();
+            col.isTrigger = true;
+            col.radius = 0.35f;
+
+            var rb = orb.AddComponent<Rigidbody2D>();
+            rb.gravityScale = 0f;
+            rb.linearDamping = 3f;
+
+            orb.AddComponent<ExpOrb>();
+
+            PrefabUtility.SaveAsPrefabAsset(orb, path);
+            GameObject.DestroyImmediate(orb);
+            Debug.Log("✅ ExpOrb.prefab 생성 완료");
         }
 
         private static void CreateEnemyPrefabs()
@@ -1205,9 +1265,76 @@ namespace MiniKingdom.Editor
 
             EditorUtility.SetDirty(hudScreen);
 
+            // --- 5. LevelUpScreen UI ---
             var levelUpGO = new GameObject("LevelUpScreen");
             levelUpGO.transform.SetParent(canvasGO.transform, false);
-            levelUpGO.AddComponent<LevelUpScreen>();
+            var luRect = levelUpGO.AddComponent<RectTransform>();
+            luRect.anchorMin = Vector2.zero;
+            luRect.anchorMax = Vector2.one;
+            luRect.sizeDelta = Vector2.zero;
+
+            // Semi-transparent dark background
+            var luBg = levelUpGO.AddComponent<Image>();
+            luBg.color = new Color(0.05f, 0.05f, 0.08f, 0.92f);
+
+            // Title
+            var titleGO = new GameObject("Title");
+            titleGO.transform.SetParent(levelUpGO.transform, false);
+            var titleRect = titleGO.AddComponent<RectTransform>();
+            titleRect.anchoredPosition = new Vector2(0, 180);
+            titleRect.sizeDelta = new Vector2(400, 60);
+            var titleTMP = titleGO.AddComponent<TextMeshProUGUI>();
+            titleTMP.text = "LEVEL UP!";
+            titleTMP.fontSize = 38;
+            titleTMP.fontStyle = FontStyles.Bold;
+            titleTMP.alignment = TextAlignmentOptions.Center;
+            titleTMP.color = new Color(1f, 0.85f, 0.2f);
+
+            // Synergy hint text
+            var hintGO = new GameObject("SynergyHint");
+            hintGO.transform.SetParent(levelUpGO.transform, false);
+            var hintRect = hintGO.AddComponent<RectTransform>();
+            hintRect.anchoredPosition = new Vector2(0, 120);
+            hintRect.sizeDelta = new Vector2(500, 40);
+            var hintTMP = hintGO.AddComponent<TextMeshProUGUI>();
+            hintTMP.text = "원하는 스킬 카드를 선택하여 능력을 강화하세요!";
+            hintTMP.fontSize = 18;
+            hintTMP.alignment = TextAlignmentOptions.Center;
+            hintTMP.color = new Color(0.8f, 0.9f, 1f);
+
+            // Timer text
+            var timerGO = new GameObject("TimerText");
+            timerGO.transform.SetParent(levelUpGO.transform, false);
+            var timerRect = timerGO.AddComponent<RectTransform>();
+            timerRect.anchoredPosition = new Vector2(0, -180);
+            timerRect.sizeDelta = new Vector2(100, 40);
+            var timerTMP = timerGO.AddComponent<TextMeshProUGUI>();
+            timerTMP.text = "15";
+            timerTMP.fontSize = 24;
+            timerTMP.alignment = TextAlignmentOptions.Center;
+            timerTMP.color = Color.white;
+
+            // Card Container (Horizontal Layout)
+            var cardContGO = new GameObject("CardContainer");
+            cardContGO.transform.SetParent(levelUpGO.transform, false);
+            var ccRect = cardContGO.AddComponent<RectTransform>();
+            ccRect.anchoredPosition = new Vector2(0, -10);
+            ccRect.sizeDelta = new Vector2(700, 280);
+
+            var hlg = cardContGO.AddComponent<HorizontalLayoutGroup>();
+            hlg.spacing = 30f;
+            hlg.childAlignment = TextAnchor.MiddleCenter;
+            hlg.childControlWidth = false;
+            hlg.childControlHeight = false;
+
+            var levelUpScreen = levelUpGO.AddComponent<LevelUpScreen>();
+            typeof(LevelUpScreen).GetField("titleObj", System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Instance)?.SetValue(levelUpScreen, titleGO);
+            typeof(LevelUpScreen).GetField("synergyHintText", System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Instance)?.SetValue(levelUpScreen, hintTMP);
+            typeof(LevelUpScreen).GetField("timerText", System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Instance)?.SetValue(levelUpScreen, timerTMP);
+            typeof(LevelUpScreen).GetField("cardContainer", System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Instance)?.SetValue(levelUpScreen, cardContGO.transform);
+            typeof(ScreenBase).GetField("screenType", System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Instance)?.SetValue(levelUpScreen, ScreenType.LevelUp);
+
+            EditorUtility.SetDirty(levelUpScreen);
             levelUpGO.SetActive(false);
 
             var resultGO = new GameObject("RunResultScreen");

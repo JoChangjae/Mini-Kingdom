@@ -66,6 +66,8 @@ namespace MiniKingdom.Data
         public float DetectionRange => 8f;
         public float AttackCooldown => attackSpeed > 0 ? (1f / attackSpeed) : 1.5f;
         public float WindUpTime => 0.4f;
+        public int ExpReward => grade == EnemyGrade.Boss ? 150 : (grade == EnemyGrade.Elite ? 50 : 20);
+        public bool IsBoss => grade == EnemyGrade.Boss;
 
         [Header("Combat Attributes")]
         public DamageType weakness;

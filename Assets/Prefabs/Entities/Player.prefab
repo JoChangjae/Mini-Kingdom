@@ -15,6 +15,7 @@ GameObject:
   - component: {fileID: 1141032004705858828}
   - component: {fileID: 2463216670596239100}
   - component: {fileID: 9139236138646584411}
+  - component: {fileID: 2729229069282886706}
   m_Layer: 0
   m_Name: Player
   m_TagString: Player
@@ -212,3 +213,15 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 303ae9379f4dd504aae176cb3d7ad1eb, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::MiniKingdom.Player.PlayerInventory
+--- !u!114 &2729229069282886706
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 5335193990169069912}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 95e311321082126428371d4b74d520fa, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::MiniKingdom.Player.PlayerSkillController

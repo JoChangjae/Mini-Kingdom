@@ -204,7 +204,44 @@ namespace MiniKingdom.Enemy
             // Drop loot
             GetComponent<MiniKingdom.Items.LootManager>()?.DropLoot(transform.position);
 
+            // Drop ExpOrb
+            SpawnExpOrb();
+
             Destroy(gameObject, 0.5f); // 딜레이 후 삭제
+        }
+
+        private void SpawnExpOrb()
+        {
+            var expOrbPrefab = Resources.Load<GameObject>("Prefabs/ExpOrb");
+#if UNITY_EDITOR
+            if (expOrbPrefab == null)
+            {
+                expOrbPrefab = UnityEditor.AssetDatabase.LoadAssetAtPath<GameObject>("Assets/Prefabs/Entities/ExpOrb.prefab");
+            }
+#endif
+            int expVal = data != null ? data.ExpReward : 20;
+            if (data != null && data.IsBoss) expVal *= 5;
+
+            if (expOrbPrefab != null)
+            {
+                var orb = Instantiate(expOrbPrefab, transform.position, Quaternion.identity);
+                var orbComp = orb.GetComponent<Combat.ExpOrb>();
+                if (orbComp != null) orbComp.Setup(expVal);
+            }
+            else
+            {
+                // Fallback direct spawn if prefab not loaded
+                var orb = new GameObject("ExpOrb");
+                orb.transform.position = transform.position;
+                var orbComp = orb.AddComponent<Combat.ExpOrb>();
+                orbComp.Setup(expVal);
+                var sr = orb.AddComponent<SpriteRenderer>();
+                sr.color = new Color(0.2f, 0.9f, 0.3f);
+                sr.sortingOrder = 10;
+                var col = orb.AddComponent<CircleCollider2D>();
+                col.isTrigger = true;
+                col.radius = 0.3f;
+            }
         }
     }
 }

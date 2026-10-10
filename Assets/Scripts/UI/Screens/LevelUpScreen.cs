@@ -78,8 +78,26 @@ namespace MiniKingdom.UI
                 {
                     card = new GameObject($"Card_{i}");
                     card.transform.SetParent(cardContainer, false);
-                    card.AddComponent<Image>().color = new Color(0.2f, 0.2f, 0.3f, 0.9f);
-                    card.AddComponent<Button>();
+                    var img = card.AddComponent<Image>();
+                    img.color = new Color(0.12f, 0.14f, 0.22f, 0.95f);
+                    
+                    var rect = card.GetComponent<RectTransform>();
+                    rect.sizeDelta = new Vector2(200, 260);
+
+                    // Text child
+                    var textObj = new GameObject("Text");
+                    textObj.transform.SetParent(card.transform, false);
+                    var tRect = textObj.AddComponent<RectTransform>();
+                    tRect.anchorMin = Vector2.zero;
+                    tRect.anchorMax = Vector2.one;
+                    tRect.offsetMin = new Vector2(10, 10);
+                    tRect.offsetMax = new Vector2(-10, -10);
+
+                    var tmp = textObj.AddComponent<TextMeshProUGUI>();
+                    tmp.fontSize = 18;
+                    tmp.alignment = TextAlignmentOptions.Center;
+                    tmp.color = Color.white;
+                    tmp.textWrappingMode = TextWrappingModes.Normal;
                 }
 
                 if (card != null)
@@ -93,8 +111,8 @@ namespace MiniKingdom.UI
                     if (textMesh != null && choices != null && i < choices.Count && choices[i] != null)
                     {
                         var skill = choices[i];
-                        string title = skill.IsFusion ? $"🔥 {skill.skillName} (융합)" : skill.skillName;
-                        textMesh.text = $"<b>{title}</b>\n{skill.description}\n[Lv.{skill.CurrentLevel}]";
+                        string title = skill.IsFusion ? $"[융합] {skill.skillName}" : skill.skillName;
+                        textMesh.text = $"<b><size=20><color=#FFD700>{title}</color></size></b>\n\n<size=15>{skill.description}</size>\n\n<color=#00FFAA>[Lv.{skill.CurrentLevel}]</color>";
                     }
                 }
             }
